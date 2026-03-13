@@ -110,7 +110,7 @@ final class Config
      */
     public static function fromEnvironment(): self
     {
-        $env = static function (string $key, mixed $default): string|false {
+        $env = static function (string $key, mixed $default): mixed {
             $value = getenv('SCI_PROFILER_' . $key);
             return $value !== false ? $value : $default;
         };
