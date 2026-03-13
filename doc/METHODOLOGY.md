@@ -86,7 +86,60 @@ M (gCO2eq) = (TotalEmbodiedCarbon / DeviceLifetimeHours) × (WallTime / 3600)
 
 ### R — Functional Unit
 
-The functional unit is **one request** (R = 1). Each SCI score represents the carbon cost of serving a single HTTP request or executing a single CLI script.
+The functional unit **R** is the denominator of the SCI formula and defines **what you are measuring the carbon cost of**. Choosing the right functional unit is critical — it determines whether the SCI score is meaningful and actionable.
+
+In SCI Profiler PHP, the functional unit is **one use case execution**: the complete end-to-end handling of a user-visible operation. This is not the execution of a single PHP method or class, but the entire chain of operations that PHP performs to fulfill a user's intent.
+
+#### What a functional unit IS
+
+A functional unit maps to a **user-facing operation** — something a real user or system triggers and expects a result from:
+
+| Use Case | Functional Unit | What Gets Measured |
+|----------|----------------|-------------------|
+| Visitor loads a WordPress blog post | `GET /2026/03/my-post/` | Theme loading, database queries, plugin execution, template rendering, response output |
+| Customer completes a WooCommerce checkout | `POST /checkout/` | Cart validation, payment gateway call, order creation, email dispatch, redirect |
+| Admin publishes a Drupal article | `POST /node/add/article` | Form validation, node save, taxonomy indexing, cache clear, hook execution |
+| API client fetches a user list | `GET /api/v1/users` | Authentication, authorization, Eloquent queries, serialization, JSON response |
+| Cron job sends daily digest emails | `php artisan emails:send-digest` | Database scan, template rendering, SMTP calls for each recipient |
+
+#### What a functional unit is NOT
+
+A functional unit is **not** a single method call, a database query, or an internal class operation:
+
+| NOT a Functional Unit | Why |
+|----------------------|-----|
+| `UserRepository::findById(42)` | Internal implementation detail, not a user-visible operation |
+| A single SQL `SELECT` query | Part of a larger use case; measuring it alone gives no actionable SCI score |
+| `CacheManager::flush()` | Infrastructure operation, not a user intent |
+| `Twig::render('base.html.twig')` | One step in serving a page, not the page itself |
+
+The distinction matters because the SCI specification asks: **"How much carbon does it cost to perform this operation for one user?"** — not "how much carbon does a single function call consume."
+
+#### Why this approach
+
+SCI Profiler PHP measures at the HTTP request / CLI execution boundary because:
+
+1. **It matches the GSF specification**: the SCI score should quantify the rate of carbon emissions as a function of a use case
+2. **It captures the full cost**: database queries, file I/O, external API calls, template rendering, plugin hooks — everything PHP does to serve the request
+3. **It is actionable**: teams can compare the carbon cost of `/checkout` vs `/product-list` and prioritize optimization
+4. **It is non-invasive**: no code instrumentation needed — the HTTP request boundary is the natural unit
+
+#### Aggregating use cases
+
+A single page load often triggers multiple HTTP requests (AJAX calls, API fetches). To measure the SCI of a complete user journey, aggregate related requests:
+
+```bash
+# Total SCI for a WordPress post page load (page + AJAX + REST API calls)
+cat /tmp/sci-profiler/sci-profiler.jsonl \
+  | jq 'select(.["request.uri"] | test("/2026/03/my-post|/wp-admin/admin-ajax|/wp-json"))' \
+  | jq -s '{total_mgco2eq: map(.["sci.sci_mgco2eq"]) | add, requests: length}'
+```
+
+See the framework-specific guides for practical examples:
+
+- [WordPress](example-wordpress.md) — blog, WooCommerce, admin panel
+- [Laravel](example-laravel.md) — web routes, API, Artisan commands, queues
+- [Symfony](example-symfony.md) — controllers, console commands, Messenger workers
 
 ## Measurement Points
 
