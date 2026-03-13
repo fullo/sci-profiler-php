@@ -1,0 +1,45 @@
+{
+    "name": "fullo/sci-profiler-php",
+    "description": "Software Carbon Intensity (SCI) profiler for PHP applications. Non-invasive, framework-agnostic carbon footprint measurement.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["profiler", "carbon", "sci", "green-software", "sustainability", "performance"],
+    "authors": [
+        {
+            "name": "fullo",
+            "homepage": "https://github.com/fullo"
+        }
+    ],
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0|^11.0",
+        "phpstan/phpstan": "^1.10",
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "psr/log": "^3.0",
+        "psr/clock": "^1.0"
+    },
+    "suggest": {
+        "psr/log": "For PSR-3 compatible logging of SCI results",
+        "psr/clock": "For PSR-20 compatible clock (testing)"
+    },
+    "autoload": {
+        "psr-4": {
+            "SciProfiler\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SciProfiler\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": "phpunit",
+        "analyse": "phpstan analyse src tests",
+        "cs-fix": "php-cs-fixer fix"
+    }
+}
