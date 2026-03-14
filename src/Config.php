@@ -12,6 +12,41 @@ namespace SciProfiler;
  */
 final class Config
 {
+    // -------------------------------------------------------------------------
+    // Default values — single source of truth
+    // -------------------------------------------------------------------------
+
+    /** Default device power consumption in watts */
+    public const DEFAULT_DEVICE_POWER_WATTS = 18.0;
+
+    /** Default grid carbon intensity in gCO2eq/kWh (global median) */
+    public const DEFAULT_GRID_CARBON_INTENSITY = 332.0;
+
+    /** Default total embodied carbon in gCO2eq (MacBook Pro 14" M1) */
+    public const DEFAULT_EMBODIED_CARBON = 211000.0;
+
+    /** Default device lifetime in hours (4 years × 8h × 365d) */
+    public const DEFAULT_DEVICE_LIFETIME_HOURS = 11680.0;
+
+    /** Default machine description label */
+    public const DEFAULT_MACHINE_DESCRIPTION = 'Default development machine';
+
+    /** Default LCA data source reference */
+    public const DEFAULT_LCA_SOURCE = 'Estimated';
+
+    /** Default enabled state */
+    public const DEFAULT_ENABLED = true;
+
+    /** Default output directory */
+    public const DEFAULT_OUTPUT_DIR = '/tmp/sci-profiler';
+
+    /** Default reporters list */
+    public const DEFAULT_REPORTERS = ['json'];
+
+    // -------------------------------------------------------------------------
+    // Instance properties
+    // -------------------------------------------------------------------------
+
     /** Device power consumption in watts */
     private float $devicePowerWatts;
 
@@ -40,15 +75,15 @@ final class Config
     private array $reporters;
 
     public function __construct(
-        float $devicePowerWatts = 18.0,
-        float $gridCarbonIntensity = 332.0,
-        float $embodiedCarbon = 211000.0,
-        float $deviceLifetimeHours = 11680.0,
-        string $machineDescription = 'Default development machine',
-        string $lcaSource = 'Estimated',
-        bool $enabled = true,
-        string $outputDir = '/tmp/sci-profiler',
-        array $reporters = ['json'],
+        float $devicePowerWatts = self::DEFAULT_DEVICE_POWER_WATTS,
+        float $gridCarbonIntensity = self::DEFAULT_GRID_CARBON_INTENSITY,
+        float $embodiedCarbon = self::DEFAULT_EMBODIED_CARBON,
+        float $deviceLifetimeHours = self::DEFAULT_DEVICE_LIFETIME_HOURS,
+        string $machineDescription = self::DEFAULT_MACHINE_DESCRIPTION,
+        string $lcaSource = self::DEFAULT_LCA_SOURCE,
+        bool $enabled = self::DEFAULT_ENABLED,
+        string $outputDir = self::DEFAULT_OUTPUT_DIR,
+        array $reporters = self::DEFAULT_REPORTERS,
     ) {
         $this->devicePowerWatts = $devicePowerWatts;
         $this->gridCarbonIntensity = $gridCarbonIntensity;
@@ -91,15 +126,15 @@ final class Config
     public static function fromArray(array $config): self
     {
         return new self(
-            devicePowerWatts: (float) ($config['device_power_watts'] ?? 18.0),
-            gridCarbonIntensity: (float) ($config['grid_carbon_intensity'] ?? 332.0),
-            embodiedCarbon: (float) ($config['embodied_carbon'] ?? 211000.0),
-            deviceLifetimeHours: (float) ($config['device_lifetime_hours'] ?? 11680.0),
-            machineDescription: (string) ($config['machine_description'] ?? 'Default development machine'),
-            lcaSource: (string) ($config['lca_source'] ?? 'Estimated'),
-            enabled: (bool) ($config['enabled'] ?? true),
-            outputDir: (string) ($config['output_dir'] ?? '/tmp/sci-profiler'),
-            reporters: (array) ($config['reporters'] ?? ['json']),
+            devicePowerWatts: (float) ($config['device_power_watts'] ?? self::DEFAULT_DEVICE_POWER_WATTS),
+            gridCarbonIntensity: (float) ($config['grid_carbon_intensity'] ?? self::DEFAULT_GRID_CARBON_INTENSITY),
+            embodiedCarbon: (float) ($config['embodied_carbon'] ?? self::DEFAULT_EMBODIED_CARBON),
+            deviceLifetimeHours: (float) ($config['device_lifetime_hours'] ?? self::DEFAULT_DEVICE_LIFETIME_HOURS),
+            machineDescription: (string) ($config['machine_description'] ?? self::DEFAULT_MACHINE_DESCRIPTION),
+            lcaSource: (string) ($config['lca_source'] ?? self::DEFAULT_LCA_SOURCE),
+            enabled: (bool) ($config['enabled'] ?? self::DEFAULT_ENABLED),
+            outputDir: (string) ($config['output_dir'] ?? self::DEFAULT_OUTPUT_DIR),
+            reporters: (array) ($config['reporters'] ?? self::DEFAULT_REPORTERS),
         );
     }
 
@@ -116,15 +151,15 @@ final class Config
         };
 
         return new self(
-            devicePowerWatts: (float) $env('DEVICE_POWER_WATTS', 18.0),
-            gridCarbonIntensity: (float) $env('GRID_CARBON_INTENSITY', 332.0),
-            embodiedCarbon: (float) $env('EMBODIED_CARBON', 211000.0),
-            deviceLifetimeHours: (float) $env('DEVICE_LIFETIME_HOURS', 11680.0),
-            machineDescription: (string) $env('MACHINE_DESCRIPTION', 'Default development machine'),
-            lcaSource: (string) $env('LCA_SOURCE', 'Estimated'),
-            enabled: (bool) $env('ENABLED', true),
-            outputDir: (string) $env('OUTPUT_DIR', '/tmp/sci-profiler'),
-            reporters: explode(',', (string) $env('REPORTERS', 'json')),
+            devicePowerWatts: (float) $env('DEVICE_POWER_WATTS', self::DEFAULT_DEVICE_POWER_WATTS),
+            gridCarbonIntensity: (float) $env('GRID_CARBON_INTENSITY', self::DEFAULT_GRID_CARBON_INTENSITY),
+            embodiedCarbon: (float) $env('EMBODIED_CARBON', self::DEFAULT_EMBODIED_CARBON),
+            deviceLifetimeHours: (float) $env('DEVICE_LIFETIME_HOURS', self::DEFAULT_DEVICE_LIFETIME_HOURS),
+            machineDescription: (string) $env('MACHINE_DESCRIPTION', self::DEFAULT_MACHINE_DESCRIPTION),
+            lcaSource: (string) $env('LCA_SOURCE', self::DEFAULT_LCA_SOURCE),
+            enabled: (bool) $env('ENABLED', self::DEFAULT_ENABLED),
+            outputDir: (string) $env('OUTPUT_DIR', self::DEFAULT_OUTPUT_DIR),
+            reporters: explode(',', (string) $env('REPORTERS', implode(',', self::DEFAULT_REPORTERS))),
         );
     }
 

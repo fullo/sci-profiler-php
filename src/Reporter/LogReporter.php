@@ -14,6 +14,8 @@ use SciProfiler\ProfileResult;
  */
 final class LogReporter implements ReporterInterface
 {
+    use EnsuresOutputDirectory;
+
     /** @var \Psr\Log\LoggerInterface|null */
     private ?object $logger;
 
@@ -44,9 +46,7 @@ final class LogReporter implements ReporterInterface
         }
 
         $dir = $config->getOutputDir();
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
+        $this->ensureDirectory($dir);
 
         file_put_contents(
             $dir . '/sci-profiler.log',

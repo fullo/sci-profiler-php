@@ -15,14 +15,14 @@ use SciProfiler\ProfileResult;
  */
 final class HtmlReporter implements ReporterInterface
 {
+    use EnsuresOutputDirectory;
+
     private const MAX_ENTRIES = 200;
 
     public function report(ProfileResult $result, Config $config): void
     {
         $dir = $config->getOutputDir();
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
+        $this->ensureDirectory($dir);
 
         $jsonlFile = $dir . '/sci-profiler.jsonl';
         $entries = $this->readEntries($jsonlFile);
@@ -37,28 +37,63 @@ final class HtmlReporter implements ReporterInterface
     }
 
     /**
+     * Read the last MAX_ENTRIES from the JSONL file.
+     *
+     * Uses fopen() + SplFileObject for efficient tail reading instead of
+     * loading the entire file into memory with file().
+     *
      * @return array<int, array<string, mixed>>
      */
     private function readEntries(string $jsonlFile): array
     {
-        if (!is_file($jsonlFile)) {
+        // Attempt to open directly — no is_file() check (TOCTOU).
+        $handle = @fopen($jsonlFile, 'r');
+        if ($handle === false) {
             return [];
         }
 
-        $lines = file($jsonlFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        if ($lines === false) {
+        // Read all lines but only keep the last MAX_ENTRIES (ring buffer).
+        $ring = [];
+        $pos = 0;
+        $size = self::MAX_ENTRIES;
+
+        while (($line = fgets($handle)) !== false) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+            $ring[$pos % $size] = $line;
+            $pos++;
+        }
+        fclose($handle);
+
+        if ($pos === 0) {
             return [];
         }
 
+        // Rebuild ordered array from ring buffer and decode.
         $entries = [];
-        foreach (array_slice($lines, -self::MAX_ENTRIES) as $line) {
-            $decoded = json_decode($line, true);
+        $total = min($pos, $size);
+        $start = $pos <= $size ? 0 : $pos % $size;
+
+        for ($i = 0; $i < $total; $i++) {
+            $idx = ($start + $i) % $size;
+            $decoded = json_decode($ring[$idx], true);
             if (is_array($decoded)) {
                 $entries[] = $decoded;
             }
         }
 
         return $entries;
+    }
+
+    /**
+     * Escape a value for safe HTML output.
+     */
+    private function esc(mixed $value, string $default = '-'): string
+    {
+        $str = (string) ($value ?? $default);
+        return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
     }
 
     /**
@@ -79,19 +114,19 @@ final class HtmlReporter implements ReporterInterface
 
             $rows .= sprintf(
                 '<tr><td>%s</td><td>%s</td><td>%s</td><td>%.2f ms</td><td>%.4f</td><td>%s MB</td></tr>',
-                htmlspecialchars((string) ($entry['timestamp'] ?? '-'), ENT_QUOTES, 'UTF-8'),
-                htmlspecialchars((string) ($entry['request.method'] ?? 'CLI'), ENT_QUOTES, 'UTF-8'),
-                htmlspecialchars((string) ($entry['request.uri'] ?? '-'), ENT_QUOTES, 'UTF-8'),
+                $this->esc($entry['timestamp'] ?? null),
+                $this->esc($entry['request.method'] ?? null, 'CLI'),
+                $this->esc($entry['request.uri'] ?? null),
                 $time,
                 $sci,
-                htmlspecialchars((string) ($entry['memory.memory_peak_mb'] ?? '?'), ENT_QUOTES, 'UTF-8'),
+                $this->esc($entry['memory.memory_peak_mb'] ?? null, '?'),
             );
         }
 
         $avgSci = $count > 0 ? $totalSci / $count : 0;
         $avgTime = $count > 0 ? $totalTime / $count : 0;
         $generated = gmdate('c');
-        $machine = htmlspecialchars($config->getMachineDescription(), ENT_QUOTES, 'UTF-8');
+        $machine = $this->esc($config->getMachineDescription());
 
         return <<<HTML
         <!DOCTYPE html>

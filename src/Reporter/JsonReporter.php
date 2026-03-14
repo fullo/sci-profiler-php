@@ -14,6 +14,8 @@ use SciProfiler\ProfileResult;
  */
 final class JsonReporter implements ReporterInterface
 {
+    use EnsuresOutputDirectory;
+
     public function report(ProfileResult $result, Config $config): void
     {
         $dir = $config->getOutputDir();
@@ -28,12 +30,5 @@ final class JsonReporter implements ReporterInterface
     public function getName(): string
     {
         return 'json';
-    }
-
-    private function ensureDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
     }
 }

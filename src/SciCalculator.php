@@ -20,6 +20,12 @@ namespace SciProfiler;
  */
 final class SciCalculator
 {
+    /** Watt-seconds to kilowatt-hours conversion factor (1 kWh = 3,600,000 Ws). */
+    private const WATT_SECONDS_PER_KWH = 3_600_000;
+
+    /** Seconds per hour. */
+    private const SECONDS_PER_HOUR = 3600;
+
     public function __construct(
         private readonly Config $config,
     ) {
@@ -32,7 +38,7 @@ final class SciCalculator
      */
     public function calculateEnergy(float $wallTimeSeconds): float
     {
-        return ($this->config->getDevicePowerWatts() * $wallTimeSeconds) / 3_600_000;
+        return ($this->config->getDevicePowerWatts() * $wallTimeSeconds) / self::WATT_SECONDS_PER_KWH;
     }
 
     /**
@@ -59,7 +65,7 @@ final class SciCalculator
         }
 
         return ($this->config->getEmbodiedCarbon() / $lifetimeHours)
-            * ($wallTimeSeconds / 3600);
+            * ($wallTimeSeconds / self::SECONDS_PER_HOUR);
     }
 
     /**

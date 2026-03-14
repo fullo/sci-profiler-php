@@ -67,12 +67,9 @@ final class SciProfiler
      */
     public function stop(): ProfileResult
     {
-        foreach ($this->collectors as $collector) {
-            $collector->stop();
-        }
-
         $collectorMetrics = [];
         foreach ($this->collectors as $collector) {
+            $collector->stop();
             $collectorMetrics[$collector->getName()] = $collector->getMetrics();
         }
 

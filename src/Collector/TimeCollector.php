@@ -12,6 +12,9 @@ namespace SciProfiler\Collector;
  */
 final class TimeCollector implements CollectorInterface
 {
+    /** Whether getrusage() is available — checked once, not per call. */
+    private static bool $hasRusage;
+
     private int $startHrtime = 0;
     private int $stopHrtime = 0;
 
@@ -21,11 +24,17 @@ final class TimeCollector implements CollectorInterface
     /** @var array{ru_utime.tv_sec: int, ru_utime.tv_usec: int, ru_stime.tv_sec: int, ru_stime.tv_usec: int}|null */
     private ?array $stopRusage = null;
 
+    public function __construct()
+    {
+        // Cache function availability once per process, not per start()/stop() call.
+        self::$hasRusage ??= function_exists('getrusage');
+    }
+
     public function start(): void
     {
         $this->startHrtime = hrtime(true);
 
-        if (function_exists('getrusage')) {
+        if (self::$hasRusage) {
             $this->startRusage = getrusage();
         }
     }
@@ -34,7 +43,7 @@ final class TimeCollector implements CollectorInterface
     {
         $this->stopHrtime = hrtime(true);
 
-        if (function_exists('getrusage')) {
+        if (self::$hasRusage) {
             $this->stopRusage = getrusage();
         }
     }

@@ -23,8 +23,14 @@ final class RequestCollector implements CollectorInterface
         $this->method = $_SERVER['REQUEST_METHOD'] ?? 'CLI';
         $this->uri = $_SERVER['REQUEST_URI'] ?? ($_SERVER['SCRIPT_FILENAME'] ?? 'unknown');
 
-        $input = file_get_contents('php://input');
-        $this->inputBytes = $input !== false ? strlen($input) : 0;
+        // Use CONTENT_LENGTH header when available to avoid reading the entire
+        // request body into memory (file uploads, large JSON payloads, etc.).
+        if (isset($_SERVER['CONTENT_LENGTH'])) {
+            $this->inputBytes = (int) $_SERVER['CONTENT_LENGTH'];
+        } else {
+            $input = file_get_contents('php://input');
+            $this->inputBytes = $input !== false ? strlen($input) : 0;
+        }
     }
 
     public function stop(): void
