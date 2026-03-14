@@ -5,4 +5,5 @@
 .DS_Store
 *.swp
 *.swo
+.claude/
 /analisi/
