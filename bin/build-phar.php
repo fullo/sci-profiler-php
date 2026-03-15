@@ -122,9 +122,10 @@ $__sciProfiler->addCollector(new \SciProfiler\Collector\MemoryCollector());
 $__sciProfiler->addCollector(new \SciProfiler\Collector\RequestCollector());
 
 $__sciReporterMap = [
-    'json' => static fn () => new \SciProfiler\Reporter\JsonReporter(),
-    'log'  => static fn () => new \SciProfiler\Reporter\LogReporter(),
-    'html' => static fn () => new \SciProfiler\Reporter\HtmlReporter(),
+    'json'  => static fn () => new \SciProfiler\Reporter\JsonReporter(),
+    'log'   => static fn () => new \SciProfiler\Reporter\LogReporter(),
+    'html'  => static fn () => new \SciProfiler\Reporter\HtmlReporter(),
+    'trend' => static fn () => new \SciProfiler\Reporter\TrendReporter(),
 ];
 foreach ($__sciConfig->getReporters() as $__rName) {
     $__rName = trim($__rName);

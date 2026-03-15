@@ -73,6 +73,7 @@ declare(strict_types=1);
         'json' => static fn () => new \SciProfiler\Reporter\JsonReporter(),
         'log' => static fn () => new \SciProfiler\Reporter\LogReporter(),
         'html' => static fn () => new \SciProfiler\Reporter\HtmlReporter(),
+        'trend' => static fn () => new \SciProfiler\Reporter\TrendReporter(),
     ];
 
     foreach ($config->getReporters() as $name) {

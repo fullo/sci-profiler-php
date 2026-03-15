@@ -4,19 +4,27 @@ declare(strict_types=1);
 
 namespace SciProfiler\Collector;
 
+use Psr\Clock\ClockInterface;
+
 /**
  * Collects wall time and CPU time metrics.
  *
- * Uses hrtime() for nanosecond-precision wall time
- * and getrusage() for user/system CPU time on supported platforms.
+ * Uses hrtime() for nanosecond-precision wall time by default.
+ * Accepts an optional PSR-20 ClockInterface for testable timing.
+ * Uses getrusage() for user/system CPU time on supported platforms.
+ *
+ * @see https://www.php-fig.org/psr/psr-20/
  */
 final class TimeCollector implements CollectorInterface
 {
-    /** Whether getrusage() is available — checked once, not per call. */
+    /** Whether getrusage() is available — checked once per process. */
     private static bool $hasRusage;
 
     private int $startHrtime = 0;
     private int $stopHrtime = 0;
+
+    private ?\DateTimeImmutable $startTime = null;
+    private ?\DateTimeImmutable $stopTime = null;
 
     /** @var array{ru_utime.tv_sec: int, ru_utime.tv_usec: int, ru_stime.tv_sec: int, ru_stime.tv_usec: int}|null */
     private ?array $startRusage = null;
@@ -24,15 +32,23 @@ final class TimeCollector implements CollectorInterface
     /** @var array{ru_utime.tv_sec: int, ru_utime.tv_usec: int, ru_stime.tv_sec: int, ru_stime.tv_usec: int}|null */
     private ?array $stopRusage = null;
 
-    public function __construct()
-    {
-        // Cache function availability once per process, not per start()/stop() call.
+    /**
+     * @param ClockInterface|null $clock Optional PSR-20 clock for testability.
+     *                                   When null, uses hrtime() for nanosecond precision.
+     */
+    public function __construct(
+        private readonly ?ClockInterface $clock = null,
+    ) {
         self::$hasRusage ??= function_exists('getrusage');
     }
 
     public function start(): void
     {
         $this->startHrtime = hrtime(true);
+
+        if ($this->clock !== null) {
+            $this->startTime = $this->clock->now();
+        }
 
         if (self::$hasRusage) {
             $this->startRusage = getrusage();
@@ -43,6 +59,10 @@ final class TimeCollector implements CollectorInterface
     {
         $this->stopHrtime = hrtime(true);
 
+        if ($this->clock !== null) {
+            $this->stopTime = $this->clock->now();
+        }
+
         if (self::$hasRusage) {
             $this->stopRusage = getrusage();
         }
@@ -50,9 +70,18 @@ final class TimeCollector implements CollectorInterface
 
     public function getMetrics(): array
     {
-        $wallTimeNs = $this->stopHrtime - $this->startHrtime;
-        $wallTimeMs = $wallTimeNs / 1_000_000;
-        $wallTimeSec = $wallTimeNs / 1_000_000_000;
+        // When a PSR-20 clock is provided and both timestamps exist,
+        // use the clock for wall time (enables deterministic testing).
+        if ($this->startTime !== null && $this->stopTime !== null) {
+            $wallTimeSec = (float) $this->stopTime->format('U.u')
+                - (float) $this->startTime->format('U.u');
+            $wallTimeNs = (int) ($wallTimeSec * 1_000_000_000);
+            $wallTimeMs = $wallTimeSec * 1_000;
+        } else {
+            $wallTimeNs = $this->stopHrtime - $this->startHrtime;
+            $wallTimeMs = $wallTimeNs / 1_000_000;
+            $wallTimeSec = $wallTimeNs / 1_000_000_000;
+        }
 
         $metrics = [
             'wall_time_ns' => $wallTimeNs,

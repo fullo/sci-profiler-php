@@ -14,6 +14,7 @@ final class RequestCollector implements CollectorInterface
 {
     private string $method = '';
     private string $uri = '';
+    private string $scriptFilename = '';
     private int $inputBytes = 0;
     private int $outputBytes = 0;
     private int $responseCode = 0;
@@ -22,6 +23,7 @@ final class RequestCollector implements CollectorInterface
     {
         $this->method = $_SERVER['REQUEST_METHOD'] ?? 'CLI';
         $this->uri = $_SERVER['REQUEST_URI'] ?? ($_SERVER['SCRIPT_FILENAME'] ?? 'unknown');
+        $this->scriptFilename = $_SERVER['SCRIPT_FILENAME'] ?? ($_SERVER['argv'][0] ?? 'unknown');
 
         // Use CONTENT_LENGTH header when available to avoid reading the entire
         // request body into memory (file uploads, large JSON payloads, etc.).
@@ -48,6 +50,7 @@ final class RequestCollector implements CollectorInterface
         return [
             'method' => $this->method,
             'uri' => $this->uri,
+            'script_filename' => $this->scriptFilename,
             'response_code' => $this->responseCode,
             'input_bytes' => $this->inputBytes,
             'output_bytes' => $this->outputBytes,

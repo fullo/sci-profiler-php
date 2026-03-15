@@ -44,6 +44,9 @@ Before every push to the repository:
 - All classes are `final` with `declare(strict_types=1)`
 - No dependencies in production code (only dev: phpunit, phpstan, php-cs-fixer)
 - Reporter errors are always caught silently — never break the host application
+- PSR-1: Basic Coding Standard
+- PSR-3: Logger Interface (accetteremo un PSR-3 logger opzionale)
+- PSR-20: Clock interface (per testabilità del timing)
 
 ## The phar
 

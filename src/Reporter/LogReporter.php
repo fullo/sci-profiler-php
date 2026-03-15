@@ -4,25 +4,24 @@ declare(strict_types=1);
 
 namespace SciProfiler\Reporter;
 
+use Psr\Log\LoggerInterface;
 use SciProfiler\Config;
 use SciProfiler\ProfileResult;
 
 /**
  * Writes a human-readable log line per request.
  *
- * If a PSR-3 logger is provided, uses it. Otherwise writes to a plain file.
+ * If a PSR-3 LoggerInterface is provided, uses it. Otherwise writes to a plain file.
+ *
+ * @see https://www.php-fig.org/psr/psr-3/
  */
 final class LogReporter implements ReporterInterface
 {
     use EnsuresOutputDirectory;
 
-    /** @var \Psr\Log\LoggerInterface|null */
-    private ?object $logger;
+    private ?LoggerInterface $logger;
 
-    /**
-     * @param object|null $logger Optional PSR-3 logger instance
-     */
-    public function __construct(?object $logger = null)
+    public function __construct(?LoggerInterface $logger = null)
     {
         $this->logger = $logger;
     }
@@ -40,7 +39,7 @@ final class LogReporter implements ReporterInterface
             $data['memory.memory_peak_mb'] ?? '?',
         );
 
-        if ($this->logger !== null && method_exists($this->logger, 'info')) {
+        if ($this->logger !== null) {
             $this->logger->info($line, $result->toArray());
             return;
         }
