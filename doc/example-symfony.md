@@ -33,15 +33,20 @@ In Symfony every HTTP request handled by the kernel and every console command ex
 ### Symfony local server
 
 ```bash
-php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+# Using phar:
+php -d auto_prepend_file=/opt/sci-profiler.phar \
   -S 127.0.0.1:8000 -t public/
+# Or using source:
+# php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+#   -S 127.0.0.1:8000 -t public/
 ```
 
 Or if using the Symfony CLI:
 
 ```bash
 # Create a php.ini override for the Symfony server
-echo "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php" > php.ini.local
+echo "auto_prepend_file=/opt/sci-profiler.phar" > php.ini.local
+# Or with source: echo "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php" > php.ini.local
 symfony server:start --php-ini=php.ini.local
 ```
 
@@ -53,7 +58,10 @@ server {
     root /var/www/myapp/public;
 
     location ~ ^/index\.php(/|$) {
-        fastcgi_param PHP_VALUE "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php";
+        # Using phar:
+        fastcgi_param PHP_VALUE "auto_prepend_file=/opt/sci-profiler.phar";
+        # Or using source:
+        # fastcgi_param PHP_VALUE "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php";
         fastcgi_pass unix:/run/php/php8.3-fpm.sock;
         fastcgi_split_path_info ^(.+\.php)(/.*)$;
         include fastcgi_params;
@@ -70,7 +78,10 @@ server {
     ServerName staging.myapp.local
     DocumentRoot /var/www/myapp/public
 
-    php_value auto_prepend_file "/opt/sci-profiler-php/src/bootstrap.php"
+    # Using phar:
+    php_value auto_prepend_file "/opt/sci-profiler.phar"
+    # Or using source:
+    # php_value auto_prepend_file "/opt/sci-profiler-php/src/bootstrap.php"
 
     <Directory /var/www/myapp/public>
         AllowOverride All
@@ -81,23 +92,37 @@ server {
 ### Docker
 
 ```dockerfile
-COPY sci-profiler-php /opt/sci-profiler-php
-RUN echo "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php" \
+# Using phar:
+COPY sci-profiler.phar /opt/sci-profiler.phar
+RUN echo "auto_prepend_file=/opt/sci-profiler.phar" \
     >> /usr/local/etc/php/conf.d/sci-profiler.ini
+
+# Or using source:
+# COPY sci-profiler-php /opt/sci-profiler-php
+# RUN echo "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php" \
+#     >> /usr/local/etc/php/conf.d/sci-profiler.ini
 ```
 
 ### Console commands
 
 ```bash
-php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+# Using phar:
+php -d auto_prepend_file=/opt/sci-profiler.phar \
   bin/console app:import-catalog --env=staging
+# Or using source:
+# php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+#   bin/console app:import-catalog --env=staging
 ```
 
 ### Messenger workers
 
 ```bash
-php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+# Using phar:
+php -d auto_prepend_file=/opt/sci-profiler.phar \
   bin/console messenger:consume async --limit=100 --time-limit=300
+# Or using source:
+# php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+#   bin/console messenger:consume async --limit=100 --time-limit=300
 ```
 
 The profiler measures the entire worker process lifecycle. For per-message granularity, use `--limit=1` or analyze the worker's total SCI divided by messages processed.

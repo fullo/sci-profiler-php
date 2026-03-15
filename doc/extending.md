@@ -67,17 +67,19 @@ interface CollectorInterface
 
 ### Registering a custom collector
 
-To use a custom collector, you need to modify the bootstrap or create your own entry point:
+To use a custom collector, you need to modify the bootstrap or create your own entry point.
+
+> **Note:** When using the phar, replace `require_once '/opt/sci-profiler-php/vendor/autoload.php'` with `require_once '/opt/sci-profiler.phar'` in the example below. The phar includes the autoloader and all classes.
 
 ```php
 <?php
 // my-bootstrap.php
-require_once '/opt/sci-profiler-php/src/bootstrap.php';
 
-// The profiler is available as a global after bootstrap
-// To add custom collectors, create a custom bootstrap instead:
+// Using phar:
+require_once '/opt/sci-profiler.phar';
+// Or using source:
+// require_once '/opt/sci-profiler-php/vendor/autoload.php';
 
-require_once '/opt/sci-profiler-php/vendor/autoload.php';
 require_once __DIR__ . '/DatabaseCollector.php';
 
 $config = \SciProfiler\Config::fromFile('/path/to/config.php');

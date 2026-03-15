@@ -41,6 +41,10 @@ The **functional unit** is a complete user-facing operation (e.g., loading a Wor
 ### 1. Install
 
 ```bash
+# Option A: Phar (zero dependencies, ~41KB)
+wget -O /opt/sci-profiler.phar https://github.com/fullo/sci-profiler-php/releases/latest/download/sci-profiler.phar
+
+# Option B: Clone + Composer
 git clone https://github.com/fullo/sci-profiler-php.git /opt/sci-profiler-php
 cd /opt/sci-profiler-php && composer install --no-dev
 ```
@@ -50,13 +54,18 @@ cd /opt/sci-profiler-php && composer install --no-dev
 Add to your `php.ini`, PHP-FPM pool, or virtualhost config:
 
 ```ini
+; Using phar (no dependencies):
+auto_prepend_file = /opt/sci-profiler.phar
+; Or using source (requires composer install):
 auto_prepend_file = /opt/sci-profiler-php/src/bootstrap.php
 ```
 
 Or with PHP's built-in server:
 
 ```bash
-php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php -S localhost:8000 -t public/
+php -d auto_prepend_file=/opt/sci-profiler.phar -S localhost:8000 -t public/
+# Or with source:
+# php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php -S localhost:8000 -t public/
 ```
 
 ### 3. Configure (optional)
@@ -102,6 +111,13 @@ composer install
 composer test          # PHPUnit (34 tests, 124 assertions)
 composer analyse       # PHPStan static analysis
 composer cs-fix        # PSR-12 coding style
+```
+
+### Building the phar
+
+```bash
+php bin/build-phar.php
+# Creates bin/sci-profiler.phar (~41KB, zero dependencies)
 ```
 
 ## Related

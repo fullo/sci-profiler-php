@@ -106,6 +106,9 @@ The `grid_carbon_intensity` parameter has the biggest impact on SCI scores. Use 
 ### php.ini (global)
 
 ```ini
+; Using phar (no dependencies):
+auto_prepend_file = /opt/sci-profiler.phar
+; Or using source (requires composer install):
 auto_prepend_file = /opt/sci-profiler-php/src/bootstrap.php
 ```
 
@@ -115,7 +118,10 @@ auto_prepend_file = /opt/sci-profiler-php/src/bootstrap.php
 <VirtualHost *:80>
     ServerName staging.example.com
     DocumentRoot /var/www/myapp/public
-    php_value auto_prepend_file "/opt/sci-profiler-php/src/bootstrap.php"
+    # Using phar:
+    php_value auto_prepend_file "/opt/sci-profiler.phar"
+    # Or using source:
+    # php_value auto_prepend_file "/opt/sci-profiler-php/src/bootstrap.php"
 </VirtualHost>
 ```
 
@@ -123,14 +129,20 @@ auto_prepend_file = /opt/sci-profiler-php/src/bootstrap.php
 
 ```ini
 [staging]
-php_value[auto_prepend_file] = /opt/sci-profiler-php/src/bootstrap.php
+; Using phar:
+php_value[auto_prepend_file] = /opt/sci-profiler.phar
+; Or using source:
+; php_value[auto_prepend_file] = /opt/sci-profiler-php/src/bootstrap.php
 ```
 
 ### Nginx + PHP-FPM
 
 ```nginx
 location ~ \.php$ {
-    fastcgi_param PHP_VALUE "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php";
+    # Using phar:
+    fastcgi_param PHP_VALUE "auto_prepend_file=/opt/sci-profiler.phar";
+    # Or using source:
+    # fastcgi_param PHP_VALUE "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php";
     fastcgi_pass unix:/run/php/php8.3-fpm.sock;
     include fastcgi_params;
 }
@@ -140,21 +152,33 @@ location ~ \.php$ {
 
 ```ini
 ; public/.user.ini
-auto_prepend_file = /opt/sci-profiler-php/src/bootstrap.php
+; Using phar:
+auto_prepend_file = /opt/sci-profiler.phar
+; Or using source:
+; auto_prepend_file = /opt/sci-profiler-php/src/bootstrap.php
 ```
 
 ### Docker
 
 ```dockerfile
-COPY sci-profiler-php /opt/sci-profiler-php
-RUN echo "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php" \
+# Using phar:
+COPY sci-profiler.phar /opt/sci-profiler.phar
+RUN echo "auto_prepend_file=/opt/sci-profiler.phar" \
     >> /usr/local/etc/php/conf.d/sci-profiler.ini
+
+# Or using source:
+# COPY sci-profiler-php /opt/sci-profiler-php
+# RUN echo "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php" \
+#     >> /usr/local/etc/php/conf.d/sci-profiler.ini
 ```
 
 ### PHP built-in server
 
 ```bash
-php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php -S localhost:8000 -t public/
+# Using phar:
+php -d auto_prepend_file=/opt/sci-profiler.phar -S localhost:8000 -t public/
+# Or using source:
+# php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php -S localhost:8000 -t public/
 ```
 
 ### Disable without removing

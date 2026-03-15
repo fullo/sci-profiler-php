@@ -32,7 +32,10 @@ Each of these is an independent functional unit measured by the profiler.
     DocumentRoot /var/www/wordpress
 
     # Enable SCI profiling (staging only!)
-    php_value auto_prepend_file "/opt/sci-profiler-php/src/bootstrap.php"
+    # Using phar:
+    php_value auto_prepend_file "/opt/sci-profiler.phar"
+    # Or using source:
+    # php_value auto_prepend_file "/opt/sci-profiler-php/src/bootstrap.php"
 </VirtualHost>
 ```
 
@@ -45,7 +48,10 @@ server {
     root /var/www/wordpress;
 
     location ~ \.php$ {
-        fastcgi_param PHP_VALUE "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php";
+        # Using phar:
+        fastcgi_param PHP_VALUE "auto_prepend_file=/opt/sci-profiler.phar";
+        # Or using source:
+        # fastcgi_param PHP_VALUE "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php";
         fastcgi_pass unix:/run/php/php8.3-fpm.sock;
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
@@ -59,14 +65,21 @@ Create a `.user.ini` in the WordPress root:
 
 ```ini
 ; /var/www/wordpress/.user.ini
-auto_prepend_file = /opt/sci-profiler-php/src/bootstrap.php
+; Using phar:
+auto_prepend_file = /opt/sci-profiler.phar
+; Or using source:
+; auto_prepend_file = /opt/sci-profiler-php/src/bootstrap.php
 ```
 
 ### wp-cli (CLI commands)
 
 ```bash
-php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+# Using phar:
+php -d auto_prepend_file=/opt/sci-profiler.phar \
   /usr/local/bin/wp cron event run --all
+# Or using source:
+# php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+#   /usr/local/bin/wp cron event run --all
 ```
 
 ## Configuration Example

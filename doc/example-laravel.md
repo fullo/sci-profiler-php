@@ -34,8 +34,12 @@ The profiler measures at the request/command boundary, capturing the complete co
 ### PHP built-in server (local dev)
 
 ```bash
-php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+# Using phar:
+php -d auto_prepend_file=/opt/sci-profiler.phar \
   artisan serve --host=0.0.0.0 --port=8000
+# Or using source:
+# php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+#   artisan serve --host=0.0.0.0 --port=8000
 ```
 
 ### Laravel Herd / Valet
@@ -44,7 +48,10 @@ Create a `.user.ini` in your Laravel `public/` directory:
 
 ```ini
 ; public/.user.ini
-auto_prepend_file = /opt/sci-profiler-php/src/bootstrap.php
+; Using phar:
+auto_prepend_file = /opt/sci-profiler.phar
+; Or using source:
+; auto_prepend_file = /opt/sci-profiler-php/src/bootstrap.php
 ```
 
 ### PHP-FPM (Nginx)
@@ -55,7 +62,10 @@ server {
     root /var/www/myapp/public;
 
     location ~ \.php$ {
-        fastcgi_param PHP_VALUE "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php";
+        # Using phar:
+        fastcgi_param PHP_VALUE "auto_prepend_file=/opt/sci-profiler.phar";
+        # Or using source:
+        # fastcgi_param PHP_VALUE "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php";
         fastcgi_pass unix:/run/php/php8.3-fpm.sock;
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
@@ -68,10 +78,15 @@ server {
 In your `docker-compose.yml` or Dockerfile:
 
 ```dockerfile
-# Dockerfile
-COPY sci-profiler-php /opt/sci-profiler-php
-RUN echo "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php" \
+# Dockerfile — using phar:
+COPY sci-profiler.phar /opt/sci-profiler.phar
+RUN echo "auto_prepend_file=/opt/sci-profiler.phar" \
     >> /usr/local/etc/php/conf.d/sci-profiler.ini
+
+# Or using source:
+# COPY sci-profiler-php /opt/sci-profiler-php
+# RUN echo "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php" \
+#     >> /usr/local/etc/php/conf.d/sci-profiler.ini
 ```
 
 Or mount via volume and set the env:
@@ -81,23 +96,31 @@ Or mount via volume and set the env:
 services:
   laravel.test:
     volumes:
-      - ./sci-profiler-php:/opt/sci-profiler-php
+      - ./sci-profiler.phar:/opt/sci-profiler.phar
     environment:
-      PHP_VALUE: "auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php"
+      PHP_VALUE: "auto_prepend_file=/opt/sci-profiler.phar"
 ```
 
 ### Artisan commands
 
 ```bash
-php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+# Using phar:
+php -d auto_prepend_file=/opt/sci-profiler.phar \
   artisan emails:send-digest
+# Or using source:
+# php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+#   artisan emails:send-digest
 ```
 
 ### Queue workers
 
 ```bash
-php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+# Using phar:
+php -d auto_prepend_file=/opt/sci-profiler.phar \
   artisan queue:work --max-jobs=100
+# Or using source:
+# php -d auto_prepend_file=/opt/sci-profiler-php/src/bootstrap.php \
+#   artisan queue:work --max-jobs=100
 ```
 
 Each job processed by the worker is a separate PHP execution context. The profiler measures the full worker lifecycle per invocation. For granular per-job measurement, use `queue:work --max-jobs=1` or `queue:listen`.
