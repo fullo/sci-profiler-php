@@ -175,6 +175,72 @@ final class ReporterTest extends TestCase
         $this->assertStringNotContainsString('[0]', $content);
     }
 
+    public function testLogReporterWithPsr3Logger(): void
+    {
+        $loggedMessages = [];
+        $loggedContexts = [];
+
+        $mockLogger = new class ($loggedMessages, $loggedContexts) implements \Psr\Log\LoggerInterface {
+            use \Psr\Log\LoggerTrait;
+
+            /** @param array<string> $messages */
+            /** @param array<array<string, mixed>> $contexts */
+            public function __construct(
+                private array &$messages,
+                private array &$contexts,
+            ) {
+            }
+
+            public function log($level, string|\Stringable $message, array $context = []): void
+            {
+                $this->messages[] = (string) $message;
+                $this->contexts[] = $context;
+            }
+        };
+
+        $config = new Config(outputDir: $this->outputDir);
+        $reporter = new LogReporter($mockLogger);
+        $result = $this->createResult();
+
+        $reporter->report($result, $config);
+
+        // Logger should be called, NOT file
+        $this->assertCount(1, $loggedMessages);
+        $this->assertStringContainsString('mgCO2eq', $loggedMessages[0]);
+        $this->assertStringContainsString('GET', $loggedMessages[0]);
+
+        // Context should be the full toArray()
+        $this->assertArrayHasKey('profile_id', $loggedContexts[0]);
+        $this->assertArrayHasKey('sci.sci_mgco2eq', $loggedContexts[0]);
+
+        // File should NOT be written
+        $this->assertFileDoesNotExist($this->outputDir . '/sci-profiler.log');
+    }
+
+    public function testJsonReporterGetName(): void
+    {
+        $reporter = new JsonReporter();
+        $this->assertSame('json', $reporter->getName());
+    }
+
+    public function testLogReporterGetName(): void
+    {
+        $reporter = new LogReporter();
+        $this->assertSame('log', $reporter->getName());
+    }
+
+    public function testHtmlReporterGetName(): void
+    {
+        $reporter = new HtmlReporter();
+        $this->assertSame('html', $reporter->getName());
+    }
+
+    public function testTrendReporterGetName(): void
+    {
+        $reporter = new TrendReporter();
+        $this->assertSame('trend', $reporter->getName());
+    }
+
     // ── HTML Reporter ──
 
     public function testHtmlReporterCreatesDashboard(): void

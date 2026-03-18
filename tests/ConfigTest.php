@@ -20,6 +20,8 @@ final class ConfigTest extends TestCase
         $this->assertTrue($config->isEnabled());
         $this->assertSame('/tmp/sci-profiler', $config->getOutputDir());
         $this->assertSame(['json'], $config->getReporters());
+        $this->assertSame('Default development machine', $config->getMachineDescription());
+        $this->assertSame('Estimated', $config->getLcaSource());
     }
 
     public function testFromArray(): void
@@ -51,6 +53,20 @@ final class ConfigTest extends TestCase
         Config::fromFile('/nonexistent/path/config.php');
     }
 
+    public function testFromFileThrowsOnNonArrayReturn(): void
+    {
+        $tmpFile = tempnam(sys_get_temp_dir(), 'sci_test_');
+        file_put_contents($tmpFile, '<?php return "not an array";');
+
+        try {
+            $this->expectException(\InvalidArgumentException::class);
+            $this->expectExceptionMessage('must return an array');
+            Config::fromFile($tmpFile);
+        } finally {
+            unlink($tmpFile);
+        }
+    }
+
     public function testFromFile(): void
     {
         $tmpFile = tempnam(sys_get_temp_dir(), 'sci_test_');
@@ -62,5 +78,20 @@ final class ConfigTest extends TestCase
         $this->assertFalse($config->isEnabled());
 
         unlink($tmpFile);
+    }
+
+    public function testConstantsMatchDefaults(): void
+    {
+        $config = new Config();
+
+        $this->assertSame(Config::DEFAULT_DEVICE_POWER_WATTS, $config->getDevicePowerWatts());
+        $this->assertSame(Config::DEFAULT_GRID_CARBON_INTENSITY, $config->getGridCarbonIntensity());
+        $this->assertSame(Config::DEFAULT_EMBODIED_CARBON, $config->getEmbodiedCarbon());
+        $this->assertSame(Config::DEFAULT_DEVICE_LIFETIME_HOURS, $config->getDeviceLifetimeHours());
+        $this->assertSame(Config::DEFAULT_MACHINE_DESCRIPTION, $config->getMachineDescription());
+        $this->assertSame(Config::DEFAULT_LCA_SOURCE, $config->getLcaSource());
+        $this->assertSame(Config::DEFAULT_ENABLED, $config->isEnabled());
+        $this->assertSame(Config::DEFAULT_OUTPUT_DIR, $config->getOutputDir());
+        $this->assertSame(Config::DEFAULT_REPORTERS, $config->getReporters());
     }
 }
