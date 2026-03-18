@@ -59,12 +59,14 @@ This is a **configured parameter**. Regional values can be found at:
 
 | Region | gCO2eq/kWh | Source |
 |--------|-----------|--------|
-| France | 56 | Electricity Maps (nuclear-heavy grid) |
-| Norway | 26 | Electricity Maps (hydro-heavy grid) |
-| Germany | 385 | Electricity Maps |
-| USA average | 390 | EPA eGRID |
-| India | 632 | CEA |
+| France | 33 | Ember Climate 2024 (nuclear-heavy grid) |
+| Norway | 27 | Ember Climate 2024 (hydro-heavy grid) |
+| Germany | 298 | Ember Climate 2024 |
+| USA average | 348 | Ember Climate 2024 |
+| India | 595 | Ember Climate 2024 |
 | GitHub Actions | 332 | Estimated median |
+
+See the full [Grid Carbon Intensity reference](grid-carbon-intensity.md) for 60+ countries.
 
 ### M — Embodied Carbon
 

@@ -1,6 +1,6 @@
 # Reporters
 
-SCI Profiler PHP includes three built-in reporters. Enable them via the `reporters` configuration option.
+SCI Profiler PHP includes four built-in reporters. Enable them via the `reporters` configuration option.
 
 ## JSON Lines (`json`)
 
@@ -127,18 +127,60 @@ open /tmp/sci-profiler/dashboard.html
 
 The dashboard is regenerated on every request, so it always shows the latest data.
 
+## Trend (`trend`)
+
+Generates a terminal-friendly trend report at `<output_dir>/sci-trend.txt`.
+
+Best for: tracking SCI changes over time, comparing runs, spotting regressions.
+
+> **Requires** the `json` reporter to be enabled (reads from `sci-profiler.jsonl`).
+
+### What it shows
+
+- **Config parameters**: device power, grid intensity, embodied carbon, machine description
+- **Per-script trends**: first → last SCI, percentage change, sparkline, memory usage
+- **Recent history**: chronological table with delta indicators (▲ worse, ▼ improved, ═ stable)
+
+### Graceful degradation
+
+- **0 entries**: shows "No profiling data collected yet" with setup hint
+- **1 entry**: shows the first measurement and "Waiting for more data"
+- **2+ entries**: full trend report
+
+### Example output
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║              SCI Trend Report — 2026-03-18 19:00:00 UTC              ║
+╚══════════════════════════════════════════════════════════════════╝
+
+  Config: E=18W  I=332 gCO2eq/kWh  M=211,000 gCO2eq  Lifetime=11,680h
+  Machine: MacBook Pro - Dev
+
+  analisi/factorial.php                    [3 runs]
+    SCI: 0.3968 → 0.3648 mgCO2eq  ▼ improved (-8.1%)
+    Memory: avg 4.0 MB | peak 4.0 MB
+    Trend: █▇▁
+```
+
+### Setup
+
+```bash
+export SCI_PROFILER_REPORTERS=json,trend
+```
+
 ## Using Multiple Reporters
 
 Enable multiple reporters as a comma-separated list:
 
 ```php
 // config file
-'reporters' => ['json', 'log', 'html'],
+'reporters' => ['json', 'log', 'html', 'trend'],
 ```
 
 ```bash
 # environment variable
-export SCI_PROFILER_REPORTERS=json,log,html
+export SCI_PROFILER_REPORTERS=json,log,html,trend
 ```
 
 All reporters run independently. If one fails, the others still execute (errors are silently caught).
@@ -162,6 +204,7 @@ All reporters output the same metrics collected during the request:
 | `memory.memory_peak_mb` | derived | Peak memory in megabytes |
 | `request.method` | `$_SERVER['REQUEST_METHOD']` | HTTP method or `CLI` |
 | `request.uri` | `$_SERVER['REQUEST_URI']` | Request path with query string |
+| `request.script_filename` | `$_SERVER['SCRIPT_FILENAME']` | PHP file being executed |
 | `request.response_code` | `http_response_code()` | HTTP response status code |
 | `request.input_bytes` | `php://input` | Request body size in bytes |
 | `request.output_bytes` | `ob_get_length()` | Response body size in bytes |

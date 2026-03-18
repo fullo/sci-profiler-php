@@ -86,7 +86,7 @@ return [
     |--------------------------------------------------------------------------
     | Reporters
     |--------------------------------------------------------------------------
-    | Which reporters to activate. Available: json, log, html
+    | Which reporters to activate. Available: json, log, html, trend
     | Use multiple: ['json', 'html']
     */
     'reporters' => ['json', 'log'],

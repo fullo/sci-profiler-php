@@ -65,6 +65,23 @@ interface CollectorInterface
 - `getMetrics()` must return an associative array; keys become metric names prefixed with the collector name (e.g., `database.query_count`)
 - `getName()` must return a unique string; it is used as the prefix in the output
 
+### PSR-20 Clock support
+
+The built-in `TimeCollector` accepts an optional PSR-20 `ClockInterface` for testable timing:
+
+```php
+use Psr\Clock\ClockInterface;
+use SciProfiler\Collector\TimeCollector;
+
+// Default: uses hrtime() for nanosecond precision (production)
+$collector = new TimeCollector();
+
+// With PSR-20 clock: uses $clock->now() for deterministic testing
+$collector = new TimeCollector(clock: $myClock);
+```
+
+When a clock is provided, `wall_time_sec` is computed from the clock's timestamps instead of `hrtime()`. This enables deterministic unit tests without relying on real elapsed time.
+
 ### Registering a custom collector
 
 To use a custom collector, you need to modify the bootstrap or create your own entry point.

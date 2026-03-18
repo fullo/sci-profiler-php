@@ -50,7 +50,7 @@ Before every push to the repository:
 
 ## The phar
 
-The phar bundles all source files + default config into a single 41KB file. It includes its own PSR-4 autoloader in the stub, so it requires zero dependencies on the host machine.
+The phar bundles all source files + default config into a single ~70KB file. It includes its own PSR-4 autoloader in the stub, so it requires zero dependencies on the host machine.
 
 Config resolution in phar mode:
 1. `SCI_PROFILER_CONFIG_FILE` env var
