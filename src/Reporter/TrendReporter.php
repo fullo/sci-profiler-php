@@ -35,11 +35,10 @@ final class TrendReporter implements ReporterInterface
         $jsonlFile = $dir . '/sci-profiler.jsonl';
         $entries = $this->readJsonlEntries($jsonlFile, self::MAX_HISTORY);
 
-        if (count($entries) < 2) {
-            return;
-        }
+        $report = count($entries) < 2
+            ? $this->buildWaitingReport($entries, $config)
+            : $this->buildReport($entries, $config);
 
-        $report = $this->buildReport($entries, $config);
         file_put_contents($dir . '/sci-trend.txt', $report, LOCK_EX);
     }
 
@@ -48,6 +47,53 @@ final class TrendReporter implements ReporterInterface
         return 'trend';
     }
 
+    /**
+     * Generate a placeholder report when there is not enough data for trends.
+     *
+     * @param array<int, array<string, mixed>> $entries
+     */
+    private function buildWaitingReport(array $entries, Config $config): string
+    {
+        $lines = [];
+        $lines[] = '╔══════════════════════════════════════════════════════════════════╗';
+        $lines[] = '║              SCI Trend Report — ' . gmdate('Y-m-d H:i:s') . ' UTC              ║';
+        $lines[] = '╚══════════════════════════════════════════════════════════════════╝';
+        $lines[] = '';
+        $lines[] = sprintf(
+            '  Config: E=%sW  I=%s gCO2eq/kWh  M=%s gCO2eq  Lifetime=%sh',
+            $config->getDevicePowerWatts(),
+            $config->getGridCarbonIntensity(),
+            number_format($config->getEmbodiedCarbon(), 0, '', ','),
+            number_format($config->getDeviceLifetimeHours(), 0, '', ','),
+        );
+        $lines[] = sprintf('  Machine: %s', $config->getMachineDescription());
+        $lines[] = '';
+
+        if (count($entries) === 0) {
+            $lines[] = '  No profiling data collected yet.';
+            $lines[] = '  Run your application with the SCI profiler enabled to start collecting data.';
+        } else {
+            $entry = $entries[0];
+            $lines[] = sprintf(
+                '  First measurement recorded: %s %s %s — %.4f mgCO2eq',
+                $entry['request.method'] ?? 'CLI',
+                $entry['request.script_filename'] ?? $entry['request.uri'] ?? 'unknown',
+                $entry['timestamp'] ?? '',
+                $entry['sci.sci_mgco2eq'] ?? 0,
+            );
+            $lines[] = '';
+            $lines[] = '  Waiting for more data to compute trends.';
+            $lines[] = '  Run the same script again to see the SCI trajectory.';
+        }
+
+        $lines[] = '';
+
+        return implode("\n", $lines) . "\n";
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $entries
+     */
     private function buildReport(array $entries, Config $config): string
     {
         $groups = [];

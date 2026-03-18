@@ -367,7 +367,7 @@ final class ReporterTest extends TestCase
         $this->assertStringContainsString('MB', $content);
     }
 
-    public function testTrendReporterSkipsWithLessThanTwoEntries(): void
+    public function testTrendReporterShowsWaitingMessageWithOneEntry(): void
     {
         $config = new Config(outputDir: $this->outputDir);
         $jsonReporter = new JsonReporter();
@@ -376,7 +376,23 @@ final class ReporterTest extends TestCase
         $jsonReporter->report($this->createResult(), $config);
         $trendReporter->report($this->createResult(), $config);
 
-        // Only 1 entry — trend file should NOT be created
-        $this->assertFileDoesNotExist($this->outputDir . '/sci-trend.txt');
+        // Only 1 entry — trend file exists with a "waiting for data" message
+        $this->assertFileExists($this->outputDir . '/sci-trend.txt');
+        $content = (string) file_get_contents($this->outputDir . '/sci-trend.txt');
+        $this->assertStringContainsString('Waiting for more data', $content);
+        $this->assertStringContainsString('First measurement recorded', $content);
+    }
+
+    public function testTrendReporterShowsEmptyMessageWithNoEntries(): void
+    {
+        $config = new Config(outputDir: $this->outputDir);
+        $trendReporter = new TrendReporter();
+
+        // No JSONL file at all
+        $trendReporter->report($this->createResult(), $config);
+
+        $this->assertFileExists($this->outputDir . '/sci-trend.txt');
+        $content = (string) file_get_contents($this->outputDir . '/sci-trend.txt');
+        $this->assertStringContainsString('No profiling data collected yet', $content);
     }
 }
