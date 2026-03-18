@@ -395,4 +395,55 @@ final class ReporterTest extends TestCase
         $content = (string) file_get_contents($this->outputDir . '/sci-trend.txt');
         $this->assertStringContainsString('No profiling data collected yet', $content);
     }
+
+    public function testTrendReporterShowsResponseCode(): void
+    {
+        $config = new Config(outputDir: $this->outputDir);
+        $jsonReporter = new JsonReporter();
+        $trendReporter = new TrendReporter();
+
+        // Write HTTP entries with status codes
+        $jsonReporter->report(
+            $this->createResult(uri: '/api/users', responseCode: 200, sciScore: 0.3),
+            $config,
+        );
+        $jsonReporter->report(
+            $this->createResult(uri: '/api/users', responseCode: 404, sciScore: 0.5),
+            $config,
+        );
+
+        $trendReporter->report($this->createResult(), $config);
+
+        $content = (string) file_get_contents($this->outputDir . '/sci-trend.txt');
+        // Status column should show HTTP codes
+        $this->assertStringContainsString('Status', $content);
+        $this->assertStringContainsString('200', $content);
+        $this->assertStringContainsString('404', $content);
+    }
+
+    public function testTrendReporterCliShowsDashForStatus(): void
+    {
+        $config = new Config(outputDir: $this->outputDir);
+        $jsonReporter = new JsonReporter();
+        $trendReporter = new TrendReporter();
+
+        // Write CLI entries (response_code = 0)
+        $cliResult = new ProfileResult(
+            collectorMetrics: [
+                'time' => ['wall_time_ms' => 50.0, 'wall_time_sec' => 0.05],
+                'memory' => ['memory_peak_mb' => 4.0],
+                'request' => ['method' => 'CLI', 'uri' => '/usr/bin/artisan', 'script_filename' => '/usr/bin/artisan', 'response_code' => 0],
+                'config' => ['device_power_watts' => 18.0, 'grid_carbon_intensity' => 332.0, 'embodied_carbon' => 211000.0, 'device_lifetime_hours' => 11680.0, 'machine_description' => 'Test'],
+            ],
+            sciMetrics: ['sci_mgco2eq' => 0.5],
+            timestamp: '2026-01-01T00:00:00+00:00',
+            profileId: 'cli1',
+        );
+        $jsonReporter->report($cliResult, $config);
+        $jsonReporter->report($cliResult, $config);
+        $trendReporter->report($cliResult, $config);
+
+        $content = (string) file_get_contents($this->outputDir . '/sci-trend.txt');
+        $this->assertStringContainsString('—', $content); // dash for CLI status
+    }
 }

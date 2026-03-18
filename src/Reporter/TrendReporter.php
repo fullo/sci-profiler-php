@@ -198,15 +198,16 @@ final class TrendReporter implements ReporterInterface
         $lines[] = '  ── Recent History (last 20) ──';
         $lines[] = '';
         $lines[] = sprintf(
-            '  %-20s %-6s %-25s %8s %10s %8s',
+            '  %-20s %-6s %6s %-25s %8s %10s %8s',
             'Timestamp',
             'Method',
+            'Status',
             'Script',
             'Time(ms)',
             'SCI(mgCO2)',
             'Mem(MB)',
         );
-        $lines[] = '  ' . str_repeat('─', 82);
+        $lines[] = '  ' . str_repeat('─', 90);
 
         $recent = array_slice($entries, -20);
         $prevSci = null;
@@ -214,6 +215,9 @@ final class TrendReporter implements ReporterInterface
         foreach ($recent as $entry) {
             $sci = (float) ($entry['sci.sci_mgco2eq'] ?? 0);
             $mem = $entry['memory.memory_peak_mb'] ?? '?';
+            $method = $entry['request.method'] ?? 'CLI';
+            $status = (int) ($entry['request.response_code'] ?? 0);
+            $statusStr = ($method !== 'CLI' && $status > 0) ? (string) $status : '—';
             $delta = '';
 
             if ($prevSci !== null && $prevSci > 0) {
@@ -230,9 +234,10 @@ final class TrendReporter implements ReporterInterface
                 ?? 'unknown';
 
             $lines[] = sprintf(
-                '  %-20s %-6s %-25s %8.2f %8.4f%s %8s',
+                '  %-20s %-6s %6s %-25s %8.2f %8.4f%s %8s',
                 substr($entry['timestamp'] ?? '', 0, 19),
-                $entry['request.method'] ?? 'CLI',
+                $method,
+                $statusStr,
                 $this->shortenPath($script, 25),
                 $entry['time.wall_time_ms'] ?? 0,
                 $sci,
