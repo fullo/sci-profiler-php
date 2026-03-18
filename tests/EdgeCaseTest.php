@@ -433,6 +433,82 @@ final class EdgeCaseTest extends TestCase
     }
 
     // =========================================================================
+    // TrendReporter — all 5 trendIndicator paths
+    // =========================================================================
+
+    public function testTrendIndicatorMuchImproved(): void
+    {
+        // Change < -20% → "▼▼ much improved"
+        $config = new Config(outputDir: $this->outputDir);
+        $jsonR = new JsonReporter();
+        $trendR = new TrendReporter();
+
+        $jsonR->report($this->makeResult(10.0, '/test.php'), $config);
+        $jsonR->report($this->makeResult(5.0, '/test.php'), $config); // -50%
+
+        $trendR->report($this->makeResult(0.1, '/dummy'), $config);
+        $content = (string) file_get_contents($this->outputDir . '/sci-trend.txt');
+        $this->assertStringContainsString('much improved', $content);
+    }
+
+    public function testTrendIndicatorImproved(): void
+    {
+        // Change between -20% and -5% → "▼ improved"
+        $config = new Config(outputDir: $this->outputDir);
+        $jsonR = new JsonReporter();
+        $trendR = new TrendReporter();
+
+        $jsonR->report($this->makeResult(1.0, '/test.php'), $config);
+        $jsonR->report($this->makeResult(0.88, '/test.php'), $config); // -12%
+
+        $trendR->report($this->makeResult(0.1, '/dummy'), $config);
+        $content = (string) file_get_contents($this->outputDir . '/sci-trend.txt');
+        $this->assertStringContainsString('▼ improved', $content);
+        $this->assertStringNotContainsString('much improved', $content);
+    }
+
+    public function testTrendIndicatorWorse(): void
+    {
+        // Change between +5% and +20% → "▲ worse"
+        $config = new Config(outputDir: $this->outputDir);
+        $jsonR = new JsonReporter();
+        $trendR = new TrendReporter();
+
+        $jsonR->report($this->makeResult(1.0, '/test.php'), $config);
+        $jsonR->report($this->makeResult(1.15, '/test.php'), $config); // +15%
+
+        $trendR->report($this->makeResult(0.1, '/dummy'), $config);
+        $content = (string) file_get_contents($this->outputDir . '/sci-trend.txt');
+        $this->assertStringContainsString('▲ worse', $content);
+        $this->assertStringNotContainsString('much worse', $content);
+    }
+
+    public function testTrendIndicatorMuchWorse(): void
+    {
+        // Change > +20% → "▲▲ much worse"
+        $config = new Config(outputDir: $this->outputDir);
+        $jsonR = new JsonReporter();
+        $trendR = new TrendReporter();
+
+        $jsonR->report($this->makeResult(1.0, '/test.php'), $config);
+        $jsonR->report($this->makeResult(2.0, '/test.php'), $config); // +100%
+
+        $trendR->report($this->makeResult(0.1, '/dummy'), $config);
+        $content = (string) file_get_contents($this->outputDir . '/sci-trend.txt');
+        $this->assertStringContainsString('much worse', $content);
+    }
+
+    // =========================================================================
+    // Config — getLcaSource
+    // =========================================================================
+
+    public function testConfigLcaSourceCustomValue(): void
+    {
+        $config = Config::fromArray(['lca_source' => 'Apple Environmental Report 2024']);
+        $this->assertSame('Apple Environmental Report 2024', $config->getLcaSource());
+    }
+
+    // =========================================================================
     // Helpers
     // =========================================================================
 

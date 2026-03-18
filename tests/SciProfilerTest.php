@@ -151,4 +151,13 @@ final class SciProfilerTest extends TestCase
 
         $this->assertSame($config, $profiler->getConfig());
     }
+
+    public function testIsStartedFalseBeforeStart(): void
+    {
+        $config = new Config();
+        $profiler = new SciProfiler($config);
+        $profiler->addCollector(new TimeCollector());
+
+        $this->assertFalse($profiler->isStarted());
+    }
 }
