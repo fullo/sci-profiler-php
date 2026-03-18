@@ -11,6 +11,7 @@
 | Document | Description |
 |----------|-------------|
 | [**Configuration**](configuration.md) | All configuration options with defaults. How to configure via PHP file, environment variables, or built-in defaults. Configuration priority order. |
+| [**Grid Carbon Intensity**](grid-carbon-intensity.md) | Reference table of carbon intensity values per country (Ember Climate data, 2024). How to find the right value for your location, auto-detection by timezone, and how to update the data. |
 | [**Reporters**](reporters.md) | The three built-in reporters (JSON lines, log, HTML dashboard). Output formats, analysis examples with `jq`, and PSR-3 logger integration. |
 | [**Extending**](extending.md) | How to write custom collectors and reporters. Interface contracts, code examples, and PSR-3 logger integration. |
 

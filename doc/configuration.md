@@ -68,20 +68,48 @@ export SCI_PROFILER_REPORTERS=json,log,html
 
 ## Finding Your Grid Carbon Intensity
 
-The `grid_carbon_intensity` parameter has the biggest impact on SCI scores. Use real data for your region:
+The `grid_carbon_intensity` parameter has the biggest impact on SCI scores.
+
+### Built-in helper
+
+SCI Profiler PHP includes a `GridCarbonData` class with carbon intensity values for 60+ countries, sourced from [Ember Climate](https://ember-energy.org/) (2024, CC BY 4.0). You can look up values programmatically:
+
+```php
+use SciProfiler\GridCarbonData;
+
+// Auto-detect from system timezone (e.g., Europe/Rome → Italy → 324)
+$detected = GridCarbonData::detectFromSystem();
+
+// Look up by country code
+GridCarbonData::forCountry('DE');  // 298 (Germany)
+GridCarbonData::forCountry('FR');  //  33 (France)
+
+// Look up by PHP timezone
+GridCarbonData::forTimezone('America/New_York');  // 348 (US average)
+```
+
+See the full [country reference table](grid-carbon-intensity.md) for all values and update instructions.
+
+### Common values
+
+| Region | gCO2eq/kWh | Notes |
+|--------|-----------|-------|
+| Norway | 27 | Hydro-heavy grid |
+| France | 33 | Nuclear-heavy grid |
+| Sweden | 32 | Hydro + nuclear |
+| Spain | 126 | Growing renewables |
+| United Kingdom | 229 | Offshore wind growth |
+| Germany | 298 | Coal phase-out in progress |
+| Italy | 324 | Gas-heavy grid |
+| United States | 348 | National average; varies by region |
+| India | 595 | Coal-dominated |
+| GitHub Actions | 332 | Estimated median for cloud |
+
+### External sources
 
 - [Electricity Maps](https://app.electricitymaps.com/) — real-time carbon intensity
-- [Our World in Data](https://ourworldindata.org/grapher/carbon-intensity-electricity) — country averages
-- [EMBER Climate](https://ember-climate.org/data/) — historical data
-
-| Region | gCO2eq/kWh |
-|--------|-----------|
-| Norway | 26 |
-| France | 56 |
-| GitHub Actions | 332 (estimated) |
-| Germany | 385 |
-| USA average | 390 |
-| India | 632 |
+- [Ember Climate](https://ember-energy.org/data/yearly-electricity-data/) — annual averages, CC BY 4.0
+- [Our World in Data](https://ourworldindata.org/grapher/carbon-intensity-electricity) — historical trends
 
 ## Finding Your Device Power
 

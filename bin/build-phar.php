@@ -64,17 +64,21 @@ try {
  * When loaded via auto_prepend_file, this registers the phar's autoloader
  * and executes the bootstrap to start profiling.
  */
-Phar::mapPhar('sci-profiler.phar');
+// Resolve the absolute path to this phar file for reliable phar:// URLs.
+// When used as auto_prepend_file, Phar::running() is empty, so we use __FILE__.
+$__sciPharPath = str_contains(__FILE__, '.phar')
+    ? preg_replace('/\\.phar.*$/', '.phar', __FILE__)
+    : __FILE__;
 
 // Register PSR-4 autoloader for classes inside the phar
-spl_autoload_register(static function (string $class): void {
+spl_autoload_register(static function (string $class) use ($__sciPharPath): void {
     $prefix = 'SciProfiler\\';
     if (strncmp($class, $prefix, strlen($prefix)) !== 0) {
         return;
     }
 
     $relativeClass = substr($class, strlen($prefix));
-    $file = 'phar://sci-profiler.phar/src/' . str_replace('\\', '/', $relativeClass) . '.php';
+    $file = 'phar://' . $__sciPharPath . '/src/' . str_replace('\\', '/', $relativeClass) . '.php';
 
     if (file_exists($file)) {
         require $file;
@@ -82,7 +86,7 @@ spl_autoload_register(static function (string $class): void {
 });
 
 // Load configuration (same logic as bootstrap.php, adapted for phar paths)
-$__sciConfig = (static function (): \SciProfiler\Config {
+$__sciConfig = (static function () use ($__sciPharPath): \SciProfiler\Config {
     // 1. Explicit config file via env
     $configFile = getenv('SCI_PROFILER_CONFIG_FILE');
     if ($configFile !== false && is_file($configFile)) {
@@ -90,7 +94,7 @@ $__sciConfig = (static function (): \SciProfiler\Config {
     }
 
     // 2. Config file next to the phar (bin/sci-profiler.local.php)
-    $pharDir = dirname(Phar::running(false));
+    $pharDir = dirname($__sciPharPath);
     $localConfig = $pharDir . '/sci-profiler.local.php';
     if ($pharDir !== '' && is_file($localConfig)) {
         return \SciProfiler\Config::fromFile($localConfig);
@@ -102,7 +106,7 @@ $__sciConfig = (static function (): \SciProfiler\Config {
     }
 
     // 4. Default config bundled in the phar
-    $pharConfig = 'phar://sci-profiler.phar/config/sci-profiler.php';
+    $pharConfig = 'phar://' . $__sciPharPath . '/config/sci-profiler.php';
     if (file_exists($pharConfig)) {
         return \SciProfiler\Config::fromFile($pharConfig);
     }
@@ -143,7 +147,7 @@ register_shutdown_function(static function () use ($__sciProfiler): void {
 });
 
 // Cleanup variables from global scope
-unset($__sciConfig, $__sciReporterMap, $__rName);
+unset($__sciPharPath, $__sciConfig, $__sciReporterMap, $__rName);
 
 __HALT_COMPILER();
 STUB;
