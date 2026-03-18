@@ -1,86 +1,97 @@
 # SCI Profiler PHP — Examples
 
-Practical before/after examples showing how code optimization reduces the Software Carbon Intensity (SCI) score.
+Practical examples showing how code optimization reduces the Software Carbon Intensity (SCI) score through a realistic profile → optimize → re-profile workflow.
 
-Each example includes an inefficient version (`before.php`) and an optimized version (`after.php`). The SCI profiler measures both, generating reports in all 4 formats (JSONL, log, HTML dashboard, trend).
+Each script accepts an `iteration` argument (1, 2, 3) representing progressively optimized versions of the same code. The SCI profiler measures all iterations, and the reports show the improvement trajectory.
 
 ## Quick Start
 
 ```bash
 cd examples
 bash run-all.sh
+open results/dashboard.html
 ```
 
-This runs each script 3 times with the SCI profiler enabled and generates reports in `results/` directories.
+This runs each script through 3 optimization iterations and generates unified reports in `results/`.
+
+## How It Works
+
+```
+Iteration 1 (naive)     →  profile  →  SCI: 0.47 mgCO2eq
+    ↓ optimize
+Iteration 2 (improved)  →  profile  →  SCI: 0.008 mgCO2eq
+    ↓ refine
+Iteration 3 (refined)   →  profile  →  SCI: 0.007 mgCO2eq
+```
+
+The `run-all.sh` script:
+1. Runs `php 01-string-processing.php 1`, then `2`, then `3`
+2. Same for each example script
+3. All runs write to the same `results/` directory
+4. The trend report and dashboard show the SCI trajectory per script
 
 ## Examples
 
 ### 01 — String Processing
 
-**Anti-pattern:** string concatenation with `.=` inside a loop.
+| Iteration | Approach | SCI |
+|-----------|----------|-----|
+| 1 (naive) | `.=` concatenation in loop — O(n²) memory copies | 0.035 mgCO2eq |
+| 2 (optimized) | Array of parts + `implode()` — O(n) allocation | 0.030 mgCO2eq |
+| 3 (refined) | `sprintf` per row + single-pass stats — no second loop | 0.026 mgCO2eq |
 
-Each `.=` on a growing string forces PHP to reallocate and copy the entire buffer, resulting in O(n²) memory operations. With 5,000 records this means millions of characters copied cumulatively.
-
-**Fix:** collect parts in an array, `implode()` once at the end. Also compute summary statistics in the same loop instead of iterating twice.
-
-| Metric | Before | After | Reduction |
-|--------|--------|-------|-----------|
-| Time | 4.7 ms | 4.3 ms | 10% |
-| SCI | 0.031 mgCO2eq | 0.029 mgCO2eq | 10% |
+**Total reduction: ~30%**
 
 ### 02 — Database Simulation (N+1 Queries)
 
-**Anti-pattern:** N+1 query pattern — fetch a list, then query each item's relations individually.
+| Iteration | Approach | SCI |
+|-----------|----------|-----|
+| 1 (naive) | N+1 queries: 1,001 total (50μs each) | 0.468 mgCO2eq |
+| 2 (optimized) | 3 batch queries + hash-map join | 0.008 mgCO2eq |
+| 3 (refined) | Batch + inline aggregation, no intermediate array | 0.007 mgCO2eq |
 
-500 orders × 2 queries each (customer + items) = 1,001 total queries. Even with 50μs per query, this adds up to ~50ms of pure wait time.
-
-**Fix:** 3 batch queries (all orders, all customers, all items), then join in PHP with hash-map lookups. O(1) per lookup, no additional "queries."
-
-| Metric | Before | After | Reduction |
-|--------|--------|-------|-----------|
-| Time | 69.7 ms | 1.3 ms | 98% |
-| SCI | 0.466 mgCO2eq | 0.008 mgCO2eq | 98% |
-| Queries | 1,001 | 3 | 99.7% |
+**Total reduction: ~98%**
 
 ### 03 — JSON API Processing
 
-**Anti-pattern:** repeated decode/encode cycles, multiple filter passes creating array copies, and re-encoding each record individually to measure its size.
+| Iteration | Approach | SCI |
+|-----------|----------|-----|
+| 1 (naive) | 6 `array_filter` passes + per-record `json_encode` | 0.078 mgCO2eq |
+| 2 (optimized) | Single-pass aggregation + one `json_encode` | 0.061 mgCO2eq |
+| 3 (refined) | `isset()` lookups instead of `in_array()` | 0.066 mgCO2eq |
 
-**Fix:** single-pass aggregation — one decode, all counts/sums/groupings computed in a single loop, one encode for the response. No intermediate array copies.
-
-| Metric | Before | After | Reduction |
-|--------|--------|-------|-----------|
-| Time | 13.4 ms | 11.4 ms | 15% |
-| SCI | 0.090 mgCO2eq | 0.076 mgCO2eq | 15% |
+**Total reduction: ~16%**
 
 ## Generated Reports
 
-After running `run-all.sh`, each example has a `results/` directory containing:
+After running `run-all.sh`, the `results/` directory contains:
 
 | File | Format | Description |
 |------|--------|-------------|
-| `sci-profiler.jsonl` | JSON Lines | One JSON object per run — machine-readable, ideal for `jq` analysis |
-| `sci-profiler.log` | Plain text | One line per run — human-readable, ideal for `tail -f` |
-| `dashboard.html` | HTML | Visual dashboard with SVG timeline chart, sparklines, and per-script comparison |
-| `sci-trend.txt` | Plain text | Terminal-friendly trend report with ASCII sparklines and delta indicators |
+| `sci-profiler.jsonl` | JSON Lines | One JSON object per run — all 9 measurements |
+| `sci-profiler.log` | Plain text | One line per run — human-readable |
+| `dashboard.html` | HTML | SVG timeline chart, per-script sparklines, last-vs-previous comparison |
+| `sci-trend.txt` | Plain text | Terminal-friendly trend with ASCII sparklines and delta indicators |
 
-Open `results/dashboard.html` in a browser to see the SVG timeline, per-script sparklines, and before/after comparison.
+Open `results/dashboard.html` in a browser to see the SVG charts showing the SCI improvement visually across iterations.
 
-## How It Works
+## Running Individual Scripts
 
-The `run-all.sh` script:
+You can also run examples individually:
 
-1. Creates a temporary config per example that enables all 4 reporters
-2. Runs `before.php` 3 times with `auto_prepend_file=src/bootstrap.php`
-3. Runs `after.php` 3 times with the same profiler
-4. The profiler captures start→stop timing, memory, and SCI for each execution
-5. The trend reporter shows how the SCI score changed across all 6 runs
+```bash
+# Run with profiler (source mode)
+php -d auto_prepend_file=../src/bootstrap.php 01-string-processing.php 1
+php -d auto_prepend_file=../src/bootstrap.php 01-string-processing.php 2
+php -d auto_prepend_file=../src/bootstrap.php 01-string-processing.php 3
 
-Since `before.php` runs first, the trend report naturally shows the transition from higher SCI (before) to lower SCI (after).
+# Run with profiler (phar mode)
+php -d auto_prepend_file=../bin/sci-profiler.phar 02-database-simulation.php 1
+```
 
 ## Notes
 
 - Results vary between machines due to CPU speed, OPcache state, and system load
-- The database simulation uses `usleep(50)` to simulate query latency — actual results depend on timer precision
-- All examples are self-contained PHP scripts with no external dependencies
+- The database simulation uses `usleep(50)` to simulate query latency
+- All examples use `mt_srand(42)` for reproducible data across iterations
 - The profiler overhead is typically < 1ms per run

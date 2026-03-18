@@ -1,6 +1,0 @@
-[2026-03-18T23:40:09+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/03-json-api/before.php | 12.901 ms | 0.0862 mgCO2eq | peak 14 MB
-[2026-03-18T23:40:09+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/03-json-api/before.php | 14.937 ms | 0.0998 mgCO2eq | peak 14 MB
-[2026-03-18T23:40:09+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/03-json-api/before.php | 12.385 ms | 0.0827 mgCO2eq | peak 14 MB
-[2026-03-18T23:40:09+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/03-json-api/after.php | 11.226 ms | 0.0750 mgCO2eq | peak 14 MB
-[2026-03-18T23:40:09+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/03-json-api/after.php | 11.827 ms | 0.0790 mgCO2eq | peak 14 MB
-[2026-03-18T23:40:10+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/03-json-api/after.php | 11.115 ms | 0.0742 mgCO2eq | peak 14 MB

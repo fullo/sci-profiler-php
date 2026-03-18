@@ -1,6 +1,0 @@
-[2026-03-18T23:40:08+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/02-database-simulation/before.php | 70.316 ms | 0.4696 mgCO2eq | peak 4 MB
-[2026-03-18T23:40:08+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/02-database-simulation/before.php | 70.201 ms | 0.4688 mgCO2eq | peak 4 MB
-[2026-03-18T23:40:09+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/02-database-simulation/before.php | 68.731 ms | 0.4590 mgCO2eq | peak 4 MB
-[2026-03-18T23:40:09+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/02-database-simulation/after.php | 1.404 ms | 0.0094 mgCO2eq | peak 4 MB
-[2026-03-18T23:40:09+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/02-database-simulation/after.php | 1.184 ms | 0.0079 mgCO2eq | peak 4 MB
-[2026-03-18T23:40:09+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/02-database-simulation/after.php | 1.19 ms | 0.0079 mgCO2eq | peak 4 MB
