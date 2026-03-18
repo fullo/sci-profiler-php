@@ -15,6 +15,10 @@ use SciProfiler\ProfileResult;
  * and the Config parameters used for the measurement.
  *
  * Requires the 'json' reporter to be enabled (reads from sci-profiler.jsonl).
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 final class TrendReporter implements ReporterInterface
 {

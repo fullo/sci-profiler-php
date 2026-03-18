@@ -11,6 +11,10 @@ use SciProfiler\ProfileResult;
  * Interface for result reporters.
  *
  * Reporters persist or display profiling results.
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 interface ReporterInterface
 {

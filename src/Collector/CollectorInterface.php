@@ -9,6 +9,10 @@ namespace SciProfiler\Collector;
  *
  * Each collector gathers a specific type of metric
  * during the request lifecycle.
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 interface CollectorInterface
 {

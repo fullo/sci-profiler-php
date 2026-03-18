@@ -17,6 +17,10 @@ namespace SciProfiler;
  *   R = Functional unit (1 request)
  *
  * @see https://sci-guide.greensoftware.foundation/
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 final class SciCalculator
 {

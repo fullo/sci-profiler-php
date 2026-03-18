@@ -9,6 +9,10 @@ namespace SciProfiler\Collector;
  *
  * Captures method, URI, response code, and I/O sizes
  * without modifying the application.
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 final class RequestCollector implements CollectorInterface
 {

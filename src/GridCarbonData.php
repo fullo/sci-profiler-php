@@ -17,6 +17,10 @@ namespace SciProfiler;
  * Data vintage: 2024 (most countries), CC BY 4.0 license.
  *
  * @see https://ember-energy.org/
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 final class GridCarbonData
 {

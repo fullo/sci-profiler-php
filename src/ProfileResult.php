@@ -6,6 +6,10 @@ namespace SciProfiler;
 
 /**
  * Immutable value object containing all profiling results for a single request.
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 final class ProfileResult
 {

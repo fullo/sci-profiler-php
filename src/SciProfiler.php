@@ -12,6 +12,10 @@ use SciProfiler\Reporter\ReporterInterface;
  *
  * Coordinates collectors and reporters to measure the SCI score
  * of a PHP request without modifying application code.
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 final class SciProfiler
 {

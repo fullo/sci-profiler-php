@@ -14,6 +14,10 @@ use Psr\Clock\ClockInterface;
  * Uses getrusage() for user/system CPU time on supported platforms.
  *
  * @see https://www.php-fig.org/psr/psr-20/
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 final class TimeCollector implements CollectorInterface
 {

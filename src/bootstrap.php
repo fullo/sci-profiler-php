@@ -16,6 +16,10 @@
  *   3. Default config at __DIR__/../config/sci-profiler.php
  *   4. Built-in defaults
  *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
+ *
  * @see https://www.php.net/manual/en/ini.core.php#ini.auto-prepend-file
  */
 

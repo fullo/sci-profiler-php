@@ -108,7 +108,7 @@ Full documentation is in the [`doc/`](doc/) directory:
 
 ```bash
 composer install
-composer test          # PHPUnit (90 tests, 517 assertions)
+composer test          # PHPUnit (119 tests, 569 assertions)
 composer analyse       # PHPStan static analysis
 composer cs-fix        # PSR-12 coding style
 ```

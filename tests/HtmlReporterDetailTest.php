@@ -279,6 +279,91 @@ final class HtmlReporterDetailTest extends TestCase
         $this->assertStringContainsString('SCI Profiler Dashboard', $content);
     }
 
+    // ── SVG Timeline Chart ──
+
+    public function testTimelineChartRenderedWithMultipleEntries(): void
+    {
+        $config = $this->seedJsonl([
+            $this->makeEntry(0.1),
+            $this->makeEntry(0.3),
+            $this->makeEntry(0.2),
+        ]);
+
+        $content = $this->getDashboard($config);
+        $this->assertStringContainsString('SCI Timeline', $content);
+        $this->assertStringContainsString('<svg', $content);
+        $this->assertStringContainsString('<polyline', $content);
+    }
+
+    public function testTimelineChartNotRenderedWithSingleEntry(): void
+    {
+        $config = $this->seedJsonl([
+            $this->makeEntry(0.1),
+        ]);
+
+        $content = $this->getDashboard($config);
+        $this->assertStringNotContainsString('SCI Timeline', $content);
+    }
+
+    // ── SVG Sparkline ──
+
+    public function testSparklineRenderedPerScript(): void
+    {
+        $config = $this->seedJsonl([
+            $this->makeEntry(0.1, '/app/a.php'),
+            $this->makeEntry(0.5, '/app/a.php'),
+            $this->makeEntry(0.3, '/app/a.php'),
+        ]);
+
+        $content = $this->getDashboard($config);
+        $this->assertStringContainsString('class="sparkline"', $content);
+        $this->assertStringContainsString('Sparkline', $content); // table header
+    }
+
+    public function testSparklineDashForSingleEntry(): void
+    {
+        $config = $this->seedJsonl([
+            $this->makeEntry(0.1, '/app/single.php'),
+        ]);
+
+        $content = $this->getDashboard($config);
+        // Single entry → sparkline shows dash
+        $perScriptStart = strpos($content, 'Per-Script Summary');
+        $recentStart = strpos($content, 'Recent Requests');
+        $section = substr($content, $perScriptStart, $recentStart - $perScriptStart);
+        $this->assertStringContainsString('—', $section);
+    }
+
+    // ── Last vs Previous ──
+
+    public function testLastVsPrevShownWithTwoEntries(): void
+    {
+        $config = $this->seedJsonl([
+            $this->makeEntry(0.5, '/app/test.php'),
+            $this->makeEntry(0.3, '/app/test.php'),
+        ]);
+
+        $content = $this->getDashboard($config);
+        $this->assertStringContainsString('Last vs Prev', $content); // table header
+        $this->assertStringContainsString('0.5000', $content);
+        $this->assertStringContainsString('0.3000', $content);
+        $this->assertStringContainsString('→', $content);
+    }
+
+    public function testLastVsPrevDashForSingleEntry(): void
+    {
+        $config = $this->seedJsonl([
+            $this->makeEntry(0.1, '/app/one.php'),
+        ]);
+
+        $content = $this->getDashboard($config);
+        $perScriptStart = strpos($content, 'Per-Script Summary');
+        $recentStart = strpos($content, 'Recent Requests');
+        $section = substr($content, $perScriptStart, $recentStart - $perScriptStart);
+        // Single entry → last-vs-prev shows dash
+        $this->assertStringContainsString('—', $section);
+    }
+
     // ── Ring buffer boundary ──
 
     public function testDashboardWith201Entries(): void
@@ -293,5 +378,6 @@ final class HtmlReporterDetailTest extends TestCase
         $content = $this->getDashboard($config);
         $this->assertStringContainsString('SCI Profiler Dashboard', $content);
         $this->assertStringContainsString('Per-Script Summary', $content);
+        $this->assertStringContainsString('<svg', $content); // timeline chart
     }
 }

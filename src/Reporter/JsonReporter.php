@@ -11,6 +11,10 @@ use SciProfiler\ProfileResult;
  * Writes profiling results as JSON lines (one JSON object per line).
  *
  * Output is suitable for CI/CD pipelines and automated analysis.
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 final class JsonReporter implements ReporterInterface
 {

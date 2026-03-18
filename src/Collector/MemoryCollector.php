@@ -8,6 +8,10 @@ namespace SciProfiler\Collector;
  * Collects memory usage metrics.
  *
  * Tracks initial memory, peak memory, and delta during the request.
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 final class MemoryCollector implements CollectorInterface
 {

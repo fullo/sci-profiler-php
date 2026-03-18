@@ -14,6 +14,10 @@ use SciProfiler\ProfileResult;
  * If a PSR-3 LoggerInterface is provided, uses it. Otherwise writes to a plain file.
  *
  * @see https://www.php-fig.org/psr/psr-3/
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 final class LogReporter implements ReporterInterface
 {

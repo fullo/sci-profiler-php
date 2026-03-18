@@ -9,6 +9,10 @@ namespace SciProfiler;
  *
  * Default values align with the Green Software Foundation methodology.
  * Override via config file or environment variables prefixed with SCI_PROFILER_.
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 final class Config
 {

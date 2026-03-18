@@ -9,6 +9,10 @@ namespace SciProfiler\Reporter;
  *
  * Uses a ring buffer to efficiently read only the last N entries
  * without loading the entire file into memory.
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 trait ReadsJsonlHistory
 {

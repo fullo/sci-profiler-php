@@ -9,6 +9,10 @@ namespace SciProfiler\Reporter;
  *
  * Uses @mkdir() to avoid TOCTOU race conditions (checking is_dir()
  * before mkdir() is unsafe under concurrent requests).
+ *
+ * @author fullo <https://github.com/fullo>
+ * @license MIT
+ * @version 1.0
  */
 trait EnsuresOutputDirectory
 {
