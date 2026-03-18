@@ -225,6 +225,8 @@ final class GridCarbonData
             return null;
         }
 
+        // All TIMEZONE_TO_COUNTRY values exist in COUNTRY_INTENSITY,
+        // but we guard defensively in case the maps drift during updates.
         return self::COUNTRY_INTENSITY[$country] ?? null;
     }
 

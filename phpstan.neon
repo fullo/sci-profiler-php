@@ -1,0 +1,25 @@
+parameters:
+    level: 5
+    paths:
+        - src
+        - tests
+    ignoreErrors:
+        # GridCarbonData: defensive ?? null guards kept for when timezone-to-country
+        # maps drift during data updates. PHPStan sees offsets as always-existing
+        # because both const arrays are defined in the same class.
+        -
+            identifier: nullCoalesce.offset
+            path: src/GridCarbonData.php
+        -
+            identifier: identical.alwaysFalse
+            path: src/GridCarbonData.php
+
+        # Anonymous test classes use by-reference constructor properties (&$reported,
+        # &$messages, &$contexts) to communicate back to the test. PHPStan sees them
+        # as "only written, never read" because reads happen via the outer variable.
+        -
+            identifier: property.onlyWritten
+            path: tests/ReporterTest.php
+        -
+            identifier: property.onlyWritten
+            path: tests/SciProfilerTest.php

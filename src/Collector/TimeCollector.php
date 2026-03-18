@@ -26,10 +26,10 @@ final class TimeCollector implements CollectorInterface
     private ?\DateTimeImmutable $startTime = null;
     private ?\DateTimeImmutable $stopTime = null;
 
-    /** @var array{ru_utime.tv_sec: int, ru_utime.tv_usec: int, ru_stime.tv_sec: int, ru_stime.tv_usec: int}|null */
+    /** @var array<string, int>|null */
     private ?array $startRusage = null;
 
-    /** @var array{ru_utime.tv_sec: int, ru_utime.tv_usec: int, ru_stime.tv_sec: int, ru_stime.tv_usec: int}|null */
+    /** @var array<string, int>|null */
     private ?array $stopRusage = null;
 
     /**
