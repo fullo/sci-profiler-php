@@ -76,6 +76,17 @@ final class SciProfiler
         $wallTimeSec = $collectorMetrics['time']['wall_time_sec'] ?? 0.0;
         $sciMetrics = $this->calculator->calculate((float) $wallTimeSec);
 
+        // Include Config parameters used for this measurement.
+        // Essential for reproducibility: readers need to know which I, E, M
+        // values produced the SCI score.
+        $collectorMetrics['config'] = [
+            'device_power_watts' => $this->config->getDevicePowerWatts(),
+            'grid_carbon_intensity' => $this->config->getGridCarbonIntensity(),
+            'embodied_carbon' => $this->config->getEmbodiedCarbon(),
+            'device_lifetime_hours' => $this->config->getDeviceLifetimeHours(),
+            'machine_description' => $this->config->getMachineDescription(),
+        ];
+
         $result = new ProfileResult(
             collectorMetrics: $collectorMetrics,
             sciMetrics: $sciMetrics,

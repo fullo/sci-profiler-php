@@ -29,14 +29,32 @@ final class LogReporter implements ReporterInterface
     public function report(ProfileResult $result, Config $config): void
     {
         $data = $result->toArray();
+
+        $method = $data['request.method'] ?? 'CLI';
+        $uri = $data['request.uri'] ?? '-';
+        $script = $data['request.script_filename'] ?? null;
+        $status = $data['request.response_code'] ?? 0;
+        $time = $data['time.wall_time_ms'] ?? '?';
+        $sci = $result->getSciScore();
+        $peak = $data['memory.memory_peak_mb'] ?? '?';
+
+        // Include script_filename if it differs from URI (provides useful context)
+        $target = ($script !== null && $script !== $uri)
+            ? sprintf('%s (%s)', $uri, basename($script))
+            : $uri;
+
+        // Include response code for HTTP requests (skip for CLI)
+        $statusStr = ($method !== 'CLI' && $status > 0) ? sprintf(' [%d]', $status) : '';
+
         $line = sprintf(
-            '[%s] %s %s | %s ms | %.4f mgCO2eq | peak %s MB',
+            '[%s] %s %s%s | %s ms | %.4f mgCO2eq | peak %s MB',
             $data['timestamp'],
-            $data['request.method'] ?? 'CLI',
-            $data['request.uri'] ?? '-',
-            $data['time.wall_time_ms'] ?? '?',
-            $result->getSciScore(),
-            $data['memory.memory_peak_mb'] ?? '?',
+            $method,
+            $target,
+            $statusStr,
+            $time,
+            $sci,
+            $peak,
         );
 
         if ($this->logger !== null) {
