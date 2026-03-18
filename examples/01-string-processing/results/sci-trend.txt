@@ -1,0 +1,34 @@
+╔══════════════════════════════════════════════════════════════════╗
+║              SCI Trend Report — 2026-03-18 23:40:08 UTC              ║
+╚══════════════════════════════════════════════════════════════════╝
+
+  Config: E=18W  I=332 gCO2eq/kWh  M=211,000 gCO2eq  Lifetime=11,680h
+  Machine: Example: 01-string-processing
+
+  Total entries: 6 | Avg SCI: 0.0299 mgCO2eq | Min: 0.0255 | Max: 0.0338
+
+  01-string-processing/before.php          [3 runs]
+    SCI: 0.0338 → 0.0303 mgCO2eq  ▼ improved (-10.3%)
+    Avg: 0.0313 | Min: 0.0298 | Max: 0.0338
+    Memory: avg 6.0 MB | peak 6.0 MB
+    Trend: █▁▁
+
+  01-string-processing/after.php           [3 runs]
+    SCI: 0.0318 → 0.0255 mgCO2eq  ▼▼ much improved (-20.0%)
+    Avg: 0.0285 | Min: 0.0255 | Max: 0.0318
+    Memory: avg 6.0 MB | peak 6.0 MB
+    Trend: █▄▁
+
+  ── Recent History (last 20) ──
+
+  Timestamp            Method Status Script                    Time(ms) SCI(mgCO2)  Mem(MB)
+  ──────────────────────────────────────────────────────────────────────────────────────────
+  2026-03-18T23:40:08  CLI       — …ng-processing/before.php     5.06   0.0338        6
+  2026-03-18T23:40:08  CLI       — …ng-processing/before.php     4.46   0.0298 ▼        6
+  2026-03-18T23:40:08  CLI       — …ng-processing/before.php     4.54   0.0303 ═        6
+  2026-03-18T23:40:08  CLI       — …ing-processing/after.php     4.77   0.0318 ▲        6
+  2026-03-18T23:40:08  CLI       — …ing-processing/after.php     4.23   0.0282 ▼        6
+  2026-03-18T23:40:08  CLI       — …ing-processing/after.php     3.81   0.0255 ▼        6
+
+  Legend: ▲ = SCI increased  ▼ = SCI decreased  ═ = stable (±5%)
+

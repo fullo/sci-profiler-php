@@ -1,0 +1,6 @@
+[2026-03-18T23:40:08+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/01-string-processing/before.php | 5.059 ms | 0.0338 mgCO2eq | peak 6 MB
+[2026-03-18T23:40:08+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/01-string-processing/before.php | 4.463 ms | 0.0298 mgCO2eq | peak 6 MB
+[2026-03-18T23:40:08+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/01-string-processing/before.php | 4.538 ms | 0.0303 mgCO2eq | peak 6 MB
+[2026-03-18T23:40:08+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/01-string-processing/after.php | 4.768 ms | 0.0318 mgCO2eq | peak 6 MB
+[2026-03-18T23:40:08+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/01-string-processing/after.php | 4.226 ms | 0.0282 mgCO2eq | peak 6 MB
+[2026-03-18T23:40:08+00:00] CLI /Users/fullo/Development/sci-profiler-php/examples/01-string-processing/after.php | 3.812 ms | 0.0255 mgCO2eq | peak 6 MB
