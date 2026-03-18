@@ -24,7 +24,9 @@ Before every push to the repository:
    php -d auto_prepend_file=bin/sci-profiler.phar -r "echo 'OK';"
    tail -1 /tmp/sci-profiler/sci-profiler.jsonl | jq .sci.sci_mgco2eq
    ```
+5. **Update the documentation**: parse and update all the markdown files when needed
 
+ 
 ## Architecture
 
 - `src/bootstrap.php` — entry point for `auto_prepend_file` (source mode)
