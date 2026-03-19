@@ -331,54 +331,57 @@ HTML;
     }
 
     /**
-     * Render an SVG timeline chart of SCI values over the last 50 entries.
+     * Render an SVG timeline chart with one line per script.
+     *
+     * Each script gets its own colored polyline so improvements are
+     * visible per-script without mixing different workloads.
      *
      * @param array<int, array<string, mixed>> $entries
      */
     private function renderTimelineChart(array $entries): string
     {
-        $recent = array_slice($entries, -50);
-        $values = array_map(
-            static fn ($e) => (float) ($e['sci.sci_mgco2eq'] ?? 0),
-            $recent,
-        );
+        // Group entries by script, preserving chronological order
+        $seriesByScript = [];
+        foreach ($entries as $entry) {
+            $script = $entry['request.script_filename']
+                ?? $entry['request.uri']
+                ?? 'unknown';
+            $seriesByScript[$script][] = (float) ($entry['sci.sci_mgco2eq'] ?? 0);
+        }
 
-        $n = count($values);
-        if ($n < 2) {
+        // Need at least one script with 2+ entries
+        $hasData = false;
+        foreach ($seriesByScript as $values) {
+            if (count($values) >= 2) {
+                $hasData = true;
+                break;
+            }
+        }
+        if (!$hasData) {
             return '';
         }
 
-        $min = min($values);
-        $max = max($values);
+        // Global min/max across all scripts for shared Y-axis
+        $allValues = array_merge(...array_values($seriesByScript));
+        $min = min($allValues);
+        $max = max($allValues);
         $range = $max - $min;
         if ($range < 0.0001) {
             $range = 1.0;
         }
 
         $w = 800;
-        $h = 150;
+        $h = 180;
         $padX = 60;
         $padY = 20;
+        $padBottom = 40; // space for legend
         $plotW = $w - $padX - 10;
-        $plotH = $h - $padY * 2;
+        $plotH = $h - $padY - $padBottom;
 
-        // Build polyline points
-        $points = [];
-        $polyPoints = [];
-        for ($i = 0; $i < $n; $i++) {
-            $x = $padX + ($i / max(1, $n - 1)) * $plotW;
-            $y = $padY + (1 - ($values[$i] - $min) / $range) * $plotH;
-            $points[] = [$x, $y];
-            $polyPoints[] = sprintf('%.1f,%.1f', $x, $y);
-        }
+        // Colors for up to 8 scripts
+        $colors = ['#2d6a4f', '#d62828', '#457b9d', '#e9c46a', '#264653', '#f4a261', '#2a9d8f', '#e76f51'];
 
-        $polyline = implode(' ', $polyPoints);
-
-        // Area fill polygon (polyline + bottom corners)
-        $areaPoints = $polyline
-            . sprintf(' %.1f,%.1f %.1f,%.1f', $padX + $plotW, $padY + $plotH, $padX, $padY + $plotH);
-
-        // Grid lines at 25%, 50%, 75%
+        // Grid lines
         $gridLines = '';
         foreach ([0.25, 0.5, 0.75] as $pct) {
             $gy = $padY + (1 - $pct) * $plotH;
@@ -392,43 +395,89 @@ HTML;
         }
 
         // Y-axis labels
-        $minLabel = sprintf('%.4f', $min);
-        $maxLabel = sprintf('%.4f', $max);
+        $yLabels = sprintf(
+            '<text x="%d" y="%.1f" font-size="10" fill="#888" text-anchor="end">%s</text>'
+            . '<text x="%d" y="%.1f" font-size="10" fill="#888" text-anchor="end">%s</text>',
+            $padX - 5,
+            $padY + 4,
+            $this->esc(sprintf('%.4f', $max)),
+            $padX - 5,
+            $padY + $plotH + 4,
+            $this->esc(sprintf('%.4f', $min)),
+        );
 
-        // X-axis labels (first and last timestamp)
-        $firstTs = substr($recent[0]['timestamp'] ?? '', 0, 16);
-        $lastTs = substr($recent[$n - 1]['timestamp'] ?? '', 0, 16);
+        // Render one polyline per script
+        $polylines = '';
+        $legendItems = '';
+        $legendX = $padX;
+        $colorIdx = 0;
+
+        foreach ($seriesByScript as $script => $values) {
+            $n = count($values);
+            if ($n < 2) {
+                $colorIdx++;
+                continue;
+            }
+
+            $color = $colors[$colorIdx % count($colors)];
+            $shortName = $this->shortenScript((string) $script);
+
+            // Build polyline points
+            $points = [];
+            for ($i = 0; $i < $n; $i++) {
+                $x = $padX + ($i / max(1, $n - 1)) * $plotW;
+                $y = $padY + (1 - ($values[$i] - $min) / $range) * $plotH;
+                $points[] = sprintf('%.1f,%.1f', $x, $y);
+            }
+
+            $polyStr = implode(' ', $points);
+            $polylines .= sprintf(
+                '<polyline points="%s" fill="none" stroke="%s" stroke-width="2" stroke-linejoin="round" />',
+                $polyStr,
+                $color,
+            );
+
+            // Dot on last point
+            $lastPoint = end($points);
+            [$lx, $ly] = explode(',', $lastPoint);
+            $polylines .= sprintf(
+                '<circle cx="%s" cy="%s" r="3" fill="%s" />',
+                $lx,
+                $ly,
+                $color,
+            );
+
+            // Legend entry
+            $legendItems .= sprintf(
+                '<rect x="%.0f" y="%d" width="12" height="3" fill="%s" />'
+                . '<text x="%.0f" y="%d" font-size="9" fill="#555">%s</text>',
+                $legendX,
+                $h - 18,
+                $color,
+                $legendX + 16,
+                $h - 15,
+                $this->esc($shortName),
+            );
+            $legendX += strlen($shortName) * 5.5 + 30;
+
+            $colorIdx++;
+        }
+
+        $totalEntries = count($allValues);
 
         return sprintf(
-            '<h2>SCI Timeline (Last %d)</h2>'
+            '<h2>SCI Timeline (%d entries)</h2>'
             . '<div class="timeline-box">'
             . '<svg viewBox="0 0 %d %d" xmlns="http://www.w3.org/2000/svg">'
-            . '%s'
-            . '<polygon points="%s" fill="rgba(45,106,79,0.1)" />'
-            . '<polyline points="%s" fill="none" stroke="#2d6a4f" stroke-width="2" stroke-linejoin="round" />'
-            . '<text x="%d" y="%.1f" font-size="10" fill="#888" text-anchor="end">%s</text>'
-            . '<text x="%d" y="%.1f" font-size="10" fill="#888" text-anchor="end">%s</text>'
-            . '<text x="%d" y="%d" font-size="9" fill="#aaa">%s</text>'
-            . '<text x="%d" y="%d" font-size="9" fill="#aaa" text-anchor="end">%s</text>'
+            . '%s%s%s%s'
             . '</svg></div>',
-            $n,
+            $totalEntries,
             $w,
             $h,
             $gridLines,
-            $areaPoints,
-            $polyline,
-            $padX - 5,
-            $padY + 4,
-            $this->esc($maxLabel),
-            $padX - 5,
-            $padY + $plotH + 4,
-            $this->esc($minLabel),
-            $padX,
-            $h - 2,
-            $this->esc($firstTs),
-            $padX + $plotW,
-            $h - 2,
-            $this->esc($lastTs),
+            $yLabels,
+            $polylines,
+            $legendItems,
         );
     }
 

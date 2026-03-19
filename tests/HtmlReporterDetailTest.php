@@ -364,6 +364,89 @@ final class HtmlReporterDetailTest extends TestCase
         $this->assertStringContainsString('—', $section);
     }
 
+    // ── Per-script timeline ──
+
+    public function testTimelineShowsSeparateLinePerScript(): void
+    {
+        $config = $this->seedJsonl([
+            $this->makeEntry(0.5, '/app/a.php'),
+            $this->makeEntry(0.3, '/app/a.php'),
+            $this->makeEntry(1.0, '/app/b.php'),
+            $this->makeEntry(0.8, '/app/b.php'),
+        ]);
+
+        $content = $this->getDashboard($config);
+        // Extract just the timeline section (before Per-Script Summary)
+        $timelineEnd = strpos($content, 'Per-Script Summary');
+        $timelineSection = substr($content, 0, $timelineEnd);
+
+        // Should have 2 polylines in the timeline (one per script, not counting sparklines)
+        $this->assertSame(2, substr_count($timelineSection, '<polyline'));
+        // Legend should show both scripts
+        $this->assertStringContainsString('a.php', $timelineSection);
+        $this->assertStringContainsString('b.php', $timelineSection);
+    }
+
+    public function testTimelineSkipsScriptWithSingleEntry(): void
+    {
+        $config = $this->seedJsonl([
+            $this->makeEntry(0.1, '/app/single.php'),
+            $this->makeEntry(0.5, '/app/multi.php'),
+            $this->makeEntry(0.3, '/app/multi.php'),
+        ]);
+
+        $content = $this->getDashboard($config);
+        $timelineEnd = strpos($content, 'Per-Script Summary');
+        $timelineSection = substr($content, 0, $timelineEnd);
+
+        // Only multi.php should have a polyline in the timeline
+        $this->assertSame(1, substr_count($timelineSection, '<polyline'));
+    }
+
+    // ── Per-script delta comparison ──
+
+    public function testDeltaOnlyComparesSameScript(): void
+    {
+        // 2 scripts interleaved: a improves, b worsens
+        $config = $this->seedJsonl([
+            $this->makeEntry(0.5, '/app/a.php'),
+            $this->makeEntry(1.0, '/app/b.php'),
+            $this->makeEntry(0.1, '/app/a.php'),  // a: improved vs 0.5
+            $this->makeEntry(2.0, '/app/b.php'),  // b: worsened vs 1.0
+        ]);
+
+        $content = $this->getDashboard($config);
+        // Both delta types should appear (a improved, b worsened)
+        $this->assertStringContainsString('delta better', $content);
+        $this->assertStringContainsString('delta worse', $content);
+    }
+
+    public function testNoDeltaOnFirstEntryOfNewScript(): void
+    {
+        $config = $this->seedJsonl([
+            $this->makeEntry(0.1, '/app/a.php'),
+            $this->makeEntry(0.05, '/app/a.php'),
+            $this->makeEntry(5.0, '/app/b.php'),  // first of b — no delta, not ▲ vs a
+        ]);
+
+        $content = $this->getDashboard($config);
+
+        // Extract the detail table row for b.php (newest-first, so it's first row)
+        // b.php is the most recent entry — should have no delta mark
+        // The detail table shows entries newest first
+        $rows = explode('</tr>', $content);
+        $bRow = '';
+        foreach ($rows as $row) {
+            if (str_contains($row, 'b.php')) {
+                $bRow = $row;
+                break;
+            }
+        }
+        // b.php row should NOT have a delta arrow
+        $this->assertStringNotContainsString('delta worse', $bRow);
+        $this->assertStringNotContainsString('delta better', $bRow);
+    }
+
     // ── Ring buffer boundary ──
 
     public function testDashboardWith201Entries(): void
@@ -378,6 +461,6 @@ final class HtmlReporterDetailTest extends TestCase
         $content = $this->getDashboard($config);
         $this->assertStringContainsString('SCI Profiler Dashboard', $content);
         $this->assertStringContainsString('Per-Script Summary', $content);
-        $this->assertStringContainsString('<svg', $content); // timeline chart
+        $this->assertStringContainsString('<svg', $content);
     }
 }

@@ -113,10 +113,10 @@ Best for: visual overview, team dashboards, periodic review.
 ### What it shows
 
 - **Summary cards**: total requests, average SCI, total emissions, average response time
-- **SVG timeline chart**: inline SVG polyline of SCI values over the last 50 entries, with area fill, grid lines, and axis labels — no JavaScript required
+- **SVG timeline chart**: one colored polyline per script showing SCI trajectory over time, with a shared Y-axis, grid lines, and legend — no JavaScript required. Scripts with a single entry are excluded from the chart.
 - **Per-script summary table**: grouped by script filename, with inline SVG sparkline, "last vs previous" comparison (with percentage delta), and first-half/second-half trend indicator
 - **Measurement parameters**: device power (E), grid carbon intensity (I), embodied carbon (M), device lifetime
-- **Detail table**: timestamp, method, URI (with script filename), response time, SCI score with delta marks (▲/▼), status badges (200/301/500), peak memory — last 200 requests
+- **Detail table**: timestamp, method, URI (with script filename), response time, SCI score with per-script delta marks (▲/▼ — only comparing entries of the same script), status badges (200/301/500), peak memory — last 200 requests
 
 ### Setup
 
