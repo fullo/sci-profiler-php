@@ -86,6 +86,11 @@ for script in "$SCRIPT_DIR"/0*.php; do
             php -d auto_prepend_file="$BOOTSTRAP" "$script" "$iter" 2>&1 | tail -1)
 
         echo -e "  ${label}: ${output}"
+
+        # Wait 1 second between iterations for distinct timestamps in reports
+        if [ "$iter" -lt 3 ]; then
+            sleep 1
+        fi
     done
 
     echo ""
