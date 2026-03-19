@@ -1,27 +1,27 @@
 ╔══════════════════════════════════════════════════════════════════╗
-║              SCI Trend Report — 2026-03-19 00:04:23 UTC              ║
+║              SCI Trend Report — 2026-03-19 00:08:13 UTC              ║
 ╚══════════════════════════════════════════════════════════════════╝
 
   Config: E=18W  I=332 gCO2eq/kWh  M=211,000 gCO2eq  Lifetime=11,680h
   Machine: SCI Profiler examples
 
-  Total entries: 9 | Avg SCI: 0.1627 mgCO2eq | Min: 0.0080 | Max: 0.4952
+  Total entries: 9 | Avg SCI: 0.2148 mgCO2eq | Min: 0.0074 | Max: 0.4641
 
   examples/01-string-processing.php        [3 runs]
-    SCI: 0.0341 → 0.0283 mgCO2eq  ▼ improved (-17.1%)
-    Avg: 0.0333 | Min: 0.0283 | Max: 0.0376
-    Memory: avg 6.0 MB | peak 6.0 MB
-    Trend: ▅█▁
+    SCI: 0.1823 → 0.1044 mgCO2eq  ▼▼ much improved (-42.7%)
+    Avg: 0.1470 | Min: 0.1044 | Max: 0.1823
+    Memory: avg 17.3 MB | peak 18.0 MB
+    Trend: █▅▁
 
   examples/02-database-simulation.php      [3 runs]
-    SCI: 0.4821 → 0.0080 mgCO2eq  ▼▼ much improved (-98.3%)
-    Avg: 0.1670 | Min: 0.0080 | Max: 0.4821
+    SCI: 0.4641 → 0.0074 mgCO2eq  ▼▼ much improved (-98.4%)
+    Avg: 0.2276 | Min: 0.0074 | Max: 0.4641
     Memory: avg 4.0 MB | peak 4.0 MB
-    Trend: █▁▁
+    Trend: █▄▁
 
   examples/03-json-api.php                 [3 runs]
-    SCI: 0.4952 → 0.1493 mgCO2eq  ▼▼ much improved (-69.9%)
-    Avg: 0.2879 | Min: 0.1493 | Max: 0.4952
+    SCI: 0.4532 → 0.1441 mgCO2eq  ▼▼ much improved (-68.2%)
+    Avg: 0.2698 | Min: 0.1441 | Max: 0.4532
     Memory: avg 34.0 MB | peak 48.9 MB
     Trend: █▂▁
 
@@ -29,15 +29,15 @@
 
   Timestamp            Method Status Script                    Time(ms) SCI(mgCO2)  Mem(MB)
   ──────────────────────────────────────────────────────────────────────────────────────────
-  2026-03-19T00:04:22  CLI       — …01-string-processing.php     5.10   0.0341        6
-  2026-03-19T00:04:22  CLI       — …01-string-processing.php     5.64   0.0376 ▲        6
-  2026-03-19T00:04:22  CLI       — …01-string-processing.php     4.23   0.0283 ▼        6
-  2026-03-19T00:04:22  CLI       — …-database-simulation.php    72.19   0.4821 ▲        4
-  2026-03-19T00:04:22  CLI       — …-database-simulation.php     1.61   0.0108 ▼        4
-  2026-03-19T00:04:22  CLI       — …-database-simulation.php     1.20   0.0080 ▼        4
-  2026-03-19T00:04:22  CLI       — examples/03-json-api.php     74.16   0.4952 ▲    48.94
-  2026-03-19T00:04:22  CLI       — examples/03-json-api.php     32.80   0.2191 ▼    30.47
-  2026-03-19T00:04:23  CLI       — examples/03-json-api.php     22.36   0.1493 ▼    22.47
+  2026-03-19T00:08:12  CLI       — …01-string-processing.php    27.29   0.1823       16
+  2026-03-19T00:08:13  CLI       — …01-string-processing.php    23.11   0.1543 ▼       18
+  2026-03-19T00:08:13  CLI       — …01-string-processing.php    15.64   0.1044 ▼       18
+  2026-03-19T00:08:13  CLI       — …-database-simulation.php    69.49   0.4641 ▲        4
+  2026-03-19T00:08:13  CLI       — …-database-simulation.php    31.66   0.2114 ▼        4
+  2026-03-19T00:08:13  CLI       — …-database-simulation.php     1.10   0.0074 ▼        4
+  2026-03-19T00:08:13  CLI       — examples/03-json-api.php     67.86   0.4532 ▲    48.94
+  2026-03-19T00:08:13  CLI       — examples/03-json-api.php     31.77   0.2121 ▼    30.47
+  2026-03-19T00:08:13  CLI       — examples/03-json-api.php     21.58   0.1441 ▼    22.47
 
   Legend: ▲ = SCI increased  ▼ = SCI decreased  ═ = stable (±5%)
 

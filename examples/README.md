@@ -32,23 +32,23 @@ The `run-all.sh` script:
 
 ## Examples
 
-### 01 — String Processing
+### 01 — String Processing (20,000 records)
 
 | Iteration | Approach | SCI |
 |-----------|----------|-----|
-| 1 (naive) | `.=` concatenation in loop — O(n²) memory copies | 0.035 mgCO2eq |
-| 2 (optimized) | Array of parts + `implode()` — O(n) allocation | 0.030 mgCO2eq |
-| 3 (refined) | `sprintf` per row + single-pass stats — no second loop | 0.026 mgCO2eq |
+| 1 (naive) | `.=` in loop (7 per row) + `str_replace` on 2MB + `substr_count` | 0.182 mgCO2eq |
+| 2 (optimized) | Array + `implode()` (but still 2 loops for summary) | 0.154 mgCO2eq |
+| 3 (refined) | `sprintf` per row + single-pass stats in one loop | 0.104 mgCO2eq |
 
-**Total reduction: ~30%**
+**Total reduction: ~43%**
 
-### 02 — Database Simulation (N+1 Queries)
+### 02 — Database Simulation (N+1 → Batch)
 
 | Iteration | Approach | SCI |
 |-----------|----------|-----|
-| 1 (naive) | N+1 queries: 1,001 total (50μs each) | 0.468 mgCO2eq |
-| 2 (optimized) | 3 batch queries + hash-map join | 0.008 mgCO2eq |
-| 3 (refined) | Batch + inline aggregation, no intermediate array | 0.007 mgCO2eq |
+| 1 (naive) | N+1 queries: 1,001 total (50μs each) | 0.464 mgCO2eq |
+| 2 (optimized) | 3 batch queries, but linear scan O(n²) for join | 0.211 mgCO2eq |
+| 3 (refined) | 3 batch + hash-map O(1) join + inline aggregation | 0.007 mgCO2eq |
 
 **Total reduction: ~98%**
 
@@ -56,11 +56,11 @@ The `run-all.sh` script:
 
 | Iteration | Approach | SCI |
 |-----------|----------|-----|
-| 1 (naive) | Double decode, sort, 6 `array_filter` passes, per-record `json_encode` | 0.506 mgCO2eq |
-| 2 (optimized) | Single-pass aggregation + one `json_encode` | 0.219 mgCO2eq |
-| 3 (refined) | Regex extraction from raw JSON — no full decode at all | 0.151 mgCO2eq |
+| 1 (naive) | Double decode, sort, 6 `array_filter` passes, per-record `json_encode` | 0.453 mgCO2eq |
+| 2 (optimized) | Single-pass aggregation + one `json_encode` | 0.212 mgCO2eq |
+| 3 (refined) | Regex extraction from raw JSON — no full decode at all | 0.144 mgCO2eq |
 
-**Total reduction: ~70%**
+**Total reduction: ~68%**
 
 ## Generated Reports
 

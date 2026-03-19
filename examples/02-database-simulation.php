@@ -9,8 +9,8 @@ declare(strict_types=1);
  * Uses usleep() to simulate real database query latency (50μs per query).
  *
  *   php 02-database-simulation.php 1    ← naive: N+1 queries (1,001 total)
- *   php 02-database-simulation.php 2    ← fix: 3 batch queries + hash join
- *   php 02-database-simulation.php 3    ← refined: batch + inline aggregation
+ *   php 02-database-simulation.php 2    ← fix: 3 batch queries, but linear scan join O(n²)
+ *   php 02-database-simulation.php 3    ← refined: 3 batch + hash-map O(1) + inline aggregation
  *
  * @author fullo <https://github.com/fullo>
  * @license MIT
@@ -101,18 +101,34 @@ match ($iteration) {
         echo "Orders: " . count($results) . " | Queries: {$queryCount} | Revenue: $" . number_format($revenue, 2) . "\n";
     })(),
 
-    // ── Iteration 2: 3 batch queries ──
-    // Fetch all data upfront, join in PHP with O(1) hash lookups.
+    // ── Iteration 2: 3 batch queries, but linear scan for join ──
+    // Good: only 3 queries instead of 1,001.
+    // Bad: customer lookup uses array_filter (O(n) per order = O(n²) total)
+    // instead of indexed array access. Also builds a flat customer list
+    // first, losing the indexed structure.
     2 => (function () use ($orders, $customers, $orderItems, &$queryCount): void {
         dbQuery('SELECT * FROM orders');
         dbQuery('SELECT * FROM customers WHERE id IN (...)');
         dbQuery('SELECT * FROM order_items WHERE order_id IN (...)');
         $queryCount = 3;
 
+        // Simulate receiving batch results as flat arrays (no index)
+        $customerList = array_values($customers);
+        $itemsByOrder = [];
+        foreach ($orderItems as $orderId => $items) {
+            foreach ($items as $item) {
+                $itemsByOrder[] = $item;
+            }
+        }
+
         $results = [];
         foreach ($orders as $order) {
-            $customer = $customers[$order['customer_id']];
-            $items = $orderItems[$order['id']];
+            // O(n) linear scan to find customer — array_filter on 200 customers × 500 orders
+            $matches = array_filter($customerList, fn ($c) => $c['id'] === $order['customer_id']);
+            $customer = reset($matches);
+
+            // O(n) linear scan for order items
+            $items = array_filter($itemsByOrder, fn ($i) => $i['order_id'] === $order['id']);
 
             $total = 0.0;
             foreach ($items as $item) {
@@ -131,15 +147,16 @@ match ($iteration) {
         echo "Orders: " . count($results) . " | Queries: {$queryCount} | Revenue: $" . number_format($revenue, 2) . "\n";
     })(),
 
-    // ── Iteration 3: batch + inline aggregation ──
-    // Same 3 queries, but revenue computed inline — no second loop,
-    // no intermediate $results array (saves memory + CPU).
+    // ── Iteration 3: batch queries + hash-map join + inline aggregation ──
+    // 3 queries + O(1) hash-map lookups + revenue computed inline.
+    // No intermediate $results array, no second summary loop.
     3 => (function () use ($orders, $customers, $orderItems, &$queryCount): void {
         dbQuery('SELECT * FROM orders');
         dbQuery('SELECT * FROM customers WHERE id IN (...)');
         dbQuery('SELECT * FROM order_items WHERE order_id IN (...)');
         $queryCount = 3;
 
+        // $customers and $orderItems are already indexed by ID — O(1) lookup
         $revenue = 0.0;
         $count = 0;
 

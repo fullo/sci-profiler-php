@@ -8,9 +8,9 @@ declare(strict_types=1);
  * Simulates building an HTML report from 5,000 records.
  * Run 3 times with increasing iteration number to see SCI drop:
  *
- *   php 01-string-processing.php 1    ← naive: .= in loop
- *   php 01-string-processing.php 2    ← fix: array + implode
- *   php 01-string-processing.php 3    ← refined: sprintf + single-pass stats
+ *   php 01-string-processing.php 1    ← naive: .= in loop + str_replace on 2MB + substr_count
+ *   php 01-string-processing.php 2    ← fix: array + implode (but still 2 loops)
+ *   php 01-string-processing.php 3    ← refined: sprintf + single-pass stats in one loop
  *
  * @author fullo <https://github.com/fullo>
  * @license MIT
@@ -20,10 +20,11 @@ declare(strict_types=1);
 $iteration = (int) ($argv[1] ?? 1);
 echo "=== String Processing — iteration {$iteration}/3 ===\n";
 
-// ── Generate 5,000 user records (same seed for all iterations) ──
+// ── Generate 20,000 user records (same seed for all iterations) ──
+// Larger dataset makes string handling differences measurable.
 mt_srand(42);
 $users = [];
-for ($i = 0; $i < 5000; $i++) {
+for ($i = 0; $i < 20000; $i++) {
     $users[] = [
         'id' => $i + 1,
         'name' => 'User ' . str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT),
@@ -42,14 +43,18 @@ $header = '<!DOCTYPE html><html><head><title>User Report</title>'
 $footer = '</tbody></table>';
 
 match ($iteration) {
-    // ── Iteration 1: Naive — string concatenation in a loop ──
-    // Each .= copies the entire $html string (O(n²) memory operations).
+    // ── Iteration 1: Maximally naive — concatenation + redundant processing ──
+    // 7 separate .= per row (each copies the entire growing string).
+    // After building the HTML, runs str_replace on the full string to
+    // "fix" the CSS class names — a common anti-pattern in legacy code.
+    // Then re-counts everything in separate loops.
     1 => (function () use ($users, $header, $footer): string {
         $html = $header;
 
         foreach ($users as $user) {
             $class = $user['active'] ? '' : ' class="inactive"';
             $status = $user['active'] ? 'Active' : 'Inactive';
+            // 7 separate concatenations per row — each copies entire $html
             $html .= '<tr' . $class . '>';
             $html .= '<td>' . $user['id'] . '</td>';
             $html .= '<td>' . htmlspecialchars($user['name']) . '</td>';
@@ -61,16 +66,21 @@ match ($iteration) {
 
         $html .= $footer;
 
-        // Summary: second loop over all users
-        $active = 0;
+        // Wasteful: "fix" class names via str_replace on the entire ~2MB string
+        $html = str_replace('class="inactive"', 'class="user-inactive"', $html);
+        $html = str_replace('class="user-inactive"', 'class="inactive"', $html);
+
+        // Wasteful: count active users by parsing the HTML we just built
+        $active = substr_count($html, '<td>Active</td>');
+        $inactive = substr_count($html, '<td>Inactive</td>');
+
+        // Wasteful: compute total score in a separate loop
         $total = 0.0;
         foreach ($users as $user) {
-            if ($user['active']) {
-                $active++;
-            }
             $total += $user['score'];
         }
-        $html .= '<p>Active: ' . $active . '/' . count($users) . '</p>';
+
+        $html .= '<p>Active: ' . $active . '/' . ($active + $inactive) . '</p>';
         $html .= '<p>Avg score: ' . number_format($total / count($users), 2) . '</p>';
         $html .= '</body></html>';
 
@@ -78,8 +88,11 @@ match ($iteration) {
         return $html;
     })(),
 
-    // ── Iteration 2: Fix — array + implode, single allocation ──
-    // Each $parts[] = '...' is O(1). implode() does one allocation at the end.
+    // ── Iteration 2: array + implode, but still two loops ──
+    // Fixed: no more .= concatenation. Uses array + implode.
+    // Remaining issue: summary stats computed in a separate second loop
+    // over all 20,000 records. Also uses string concatenation for each row
+    // instead of sprintf.
     2 => (function () use ($users, $header, $footer): string {
         $parts = [$header];
 
@@ -97,7 +110,7 @@ match ($iteration) {
 
         $parts[] = $footer;
 
-        // Summary: still a second loop
+        // Still a second loop for summary — iterates 20,000 records again
         $active = 0;
         $total = 0.0;
         foreach ($users as $user) {
