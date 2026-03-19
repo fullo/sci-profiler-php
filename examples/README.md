@@ -52,15 +52,15 @@ The `run-all.sh` script:
 
 **Total reduction: ~98%**
 
-### 03 — JSON API Processing
+### 03 — JSON API Processing (10,000 events)
 
 | Iteration | Approach | SCI |
 |-----------|----------|-----|
-| 1 (naive) | 6 `array_filter` passes + per-record `json_encode` | 0.078 mgCO2eq |
-| 2 (optimized) | Single-pass aggregation + one `json_encode` | 0.061 mgCO2eq |
-| 3 (refined) | `isset()` lookups instead of `in_array()` | 0.066 mgCO2eq |
+| 1 (naive) | Double decode, sort, 6 `array_filter` passes, per-record `json_encode` | 0.506 mgCO2eq |
+| 2 (optimized) | Single-pass aggregation + one `json_encode` | 0.219 mgCO2eq |
+| 3 (refined) | Regex extraction from raw JSON — no full decode at all | 0.151 mgCO2eq |
 
-**Total reduction: ~16%**
+**Total reduction: ~70%**
 
 ## Generated Reports
 
