@@ -214,7 +214,7 @@ final class TrendReporter implements ReporterInterface
         $lines[] = '  ' . str_repeat('─', 90);
 
         $recent = array_slice($entries, -20);
-        $prevSci = null;
+        $lastSciByScript = [];
 
         foreach ($recent as $entry) {
             $sci = (float) ($entry['sci.sci_mgco2eq'] ?? 0);
@@ -222,20 +222,22 @@ final class TrendReporter implements ReporterInterface
             $method = $entry['request.method'] ?? 'CLI';
             $status = (int) ($entry['request.response_code'] ?? 0);
             $statusStr = ($method !== 'CLI' && $status > 0) ? (string) $status : '—';
-            $delta = '';
 
-            if ($prevSci !== null && $prevSci > 0) {
-                $change = (($sci - $prevSci) / $prevSci) * 100;
+            $script = $entry['request.script_filename']
+                ?? $entry['request.uri']
+                ?? 'unknown';
+
+            // Delta: compare only to the previous entry of the SAME script
+            $delta = '';
+            if (isset($lastSciByScript[$script]) && $lastSciByScript[$script] > 0) {
+                $change = (($sci - $lastSciByScript[$script]) / $lastSciByScript[$script]) * 100;
                 if (abs($change) > self::STABLE_THRESHOLD) {
                     $delta = $change > 0 ? ' ▲' : ' ▼';
                 } else {
                     $delta = ' ═';
                 }
             }
-
-            $script = $entry['request.script_filename']
-                ?? $entry['request.uri']
-                ?? 'unknown';
+            $lastSciByScript[$script] = $sci;
 
             $lines[] = sprintf(
                 '  %-20s %-6s %6s %-25s %8.2f %8.4f%s %8s',
@@ -249,7 +251,6 @@ final class TrendReporter implements ReporterInterface
                 $mem,
             );
 
-            $prevSci = $sci;
         }
 
         $lines[] = '';

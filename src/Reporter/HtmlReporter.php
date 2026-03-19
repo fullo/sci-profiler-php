@@ -160,19 +160,24 @@ final class HtmlReporter implements ReporterInterface
         $detailRows = '';
         $recentEntries = array_slice($entries, -100);
 
+        // Pre-compute deltas per script — only compare entries of the same script.
         $deltas = [];
-        $prevSci = null;
+        $lastSciByScript = [];
         foreach ($recentEntries as $i => $entry) {
             $sci = (float) ($entry['sci.sci_mgco2eq'] ?? 0);
-            if ($prevSci !== null && $prevSci > 0) {
-                $change = (($sci - $prevSci) / $prevSci) * 100;
+            $scriptKey = $entry['request.script_filename']
+                ?? $entry['request.uri']
+                ?? 'unknown';
+
+            if (isset($lastSciByScript[$scriptKey]) && $lastSciByScript[$scriptKey] > 0) {
+                $change = (($sci - $lastSciByScript[$scriptKey]) / $lastSciByScript[$scriptKey]) * 100;
                 if ($change > 5) {
                     $deltas[$i] = ' <span class="delta worse">▲</span>';
                 } elseif ($change < -5) {
                     $deltas[$i] = ' <span class="delta better">▼</span>';
                 }
             }
-            $prevSci = $sci;
+            $lastSciByScript[$scriptKey] = $sci;
         }
 
         foreach (array_reverse($recentEntries, true) as $i => $entry) {
