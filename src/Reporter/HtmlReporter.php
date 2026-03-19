@@ -154,11 +154,28 @@ final class HtmlReporter implements ReporterInterface
             );
         }
 
-        // ── Detail table (chronological, last 100) ──
+        // ── Detail table (newest first, last 100) ──
+        // Pre-compute deltas in chronological order BEFORE reversing,
+        // so each entry's delta compares to its chronological predecessor.
         $detailRows = '';
         $recentEntries = array_slice($entries, -100);
+
+        $deltas = [];
         $prevSci = null;
-        foreach (array_reverse($recentEntries) as $entry) {
+        foreach ($recentEntries as $i => $entry) {
+            $sci = (float) ($entry['sci.sci_mgco2eq'] ?? 0);
+            if ($prevSci !== null && $prevSci > 0) {
+                $change = (($sci - $prevSci) / $prevSci) * 100;
+                if ($change > 5) {
+                    $deltas[$i] = ' <span class="delta worse">▲</span>';
+                } elseif ($change < -5) {
+                    $deltas[$i] = ' <span class="delta better">▼</span>';
+                }
+            }
+            $prevSci = $sci;
+        }
+
+        foreach (array_reverse($recentEntries, true) as $i => $entry) {
             $sci = (float) ($entry['sci.sci_mgco2eq'] ?? 0);
             $time = (float) ($entry['time.wall_time_ms'] ?? 0);
             $method = $entry['request.method'] ?? 'CLI';
@@ -177,16 +194,7 @@ final class HtmlReporter implements ReporterInterface
                 $statusBadge = sprintf(' <span class="badge %s">%d</span>', $statusClass, $status);
             }
 
-            // Delta indicator
-            $deltaMark = '';
-            if ($prevSci !== null && $prevSci > 0) {
-                $change = (($sci - $prevSci) / $prevSci) * 100;
-                if ($change > 5) {
-                    $deltaMark = ' <span class="delta worse">▲</span>';
-                } elseif ($change < -5) {
-                    $deltaMark = ' <span class="delta better">▼</span>';
-                }
-            }
+            $deltaMark = $deltas[$i] ?? '';
 
             $detailRows .= sprintf(
                 '<tr><td>%s</td><td>%s%s</td><td>%s</td><td class="num">%.2f</td>'
@@ -200,8 +208,6 @@ final class HtmlReporter implements ReporterInterface
                 $deltaMark,
                 $this->esc($peak),
             );
-
-            $prevSci = $sci;
         }
 
         // ── Config section ──
