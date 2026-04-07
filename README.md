@@ -32,7 +32,7 @@ The **functional unit** is a complete user-facing operation (e.g., loading a Wor
 - **Zero application changes** — uses PHP's `auto_prepend_file` directive
 - **Framework-agnostic** — works with Laravel, Symfony, WordPress, Drupal, vanilla PHP
 - **Minimal footprint** — measures only start/end of request, no tick functions
-- **Multiple reporters** — JSON lines, plain log, static HTML dashboard
+- **Multiple reporters** — JSON lines, plain log, static HTML dashboard, SCI trend tracking
 - **PSR compliant** — PSR-4 autoloading, PSR-12 coding style, PSR-3 logger support
 - **Fail-safe** — reporter errors are silently caught, never breaks the host application
 
@@ -41,7 +41,7 @@ The **functional unit** is a complete user-facing operation (e.g., loading a Wor
 ### 1. Install
 
 ```bash
-# Option A: Phar (zero dependencies, ~41KB)
+# Option A: Phar (zero dependencies, ~82KB)
 wget -O /opt/sci-profiler.phar https://github.com/fullo/sci-profiler-php/releases/latest/download/sci-profiler.phar
 
 # Option B: Clone + Composer
@@ -108,7 +108,7 @@ Full documentation is in the [`doc/`](doc/) directory:
 
 ```bash
 composer install
-composer test          # PHPUnit (119 tests, 569 assertions)
+composer test          # PHPUnit (131 tests, 589 assertions)
 composer analyse       # PHPStan static analysis
 composer cs-fix        # PSR-12 coding style
 ```
@@ -117,7 +117,7 @@ composer cs-fix        # PSR-12 coding style
 
 ```bash
 php bin/build-phar.php
-# Creates bin/sci-profiler.phar (~41KB, zero dependencies)
+# Creates bin/sci-profiler.phar (~82KB, zero dependencies)
 ```
 
 ## Related

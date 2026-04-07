@@ -35,7 +35,7 @@ return [
     |--------------------------------------------------------------------------
     | Carbon intensity of the electricity grid where the machine is located.
     | Find your region: https://app.electricitymaps.com/
-    | Examples: France = 56, Germany = 385, USA average = 390, Norway = 26
+    | Examples: France = 33, Germany = 298, USA average = 348, Norway = 27 (Ember 2024)
     | Default: 332 (GitHub Actions median)
     */
     'grid_carbon_intensity' => 332.0,

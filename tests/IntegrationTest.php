@@ -27,6 +27,12 @@ final class IntegrationTest extends TestCase
 
     protected function tearDown(): void
     {
+        unset(
+            $_SERVER['REQUEST_METHOD'],
+            $_SERVER['REQUEST_URI'],
+            $_SERVER['SCRIPT_FILENAME'],
+        );
+
         if (is_dir($this->outputDir)) {
             $files = glob($this->outputDir . '/*');
             if ($files !== false) {
@@ -95,8 +101,6 @@ final class IntegrationTest extends TestCase
 
         // Prevent optimizer from removing $data
         $this->assertNotEmpty($data);
-
-        unset($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
     }
 
     public function testMultipleRequestsAppendToJsonl(): void

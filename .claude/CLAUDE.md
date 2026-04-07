@@ -34,9 +34,13 @@ Before every push to the repository:
 - `bin/build-phar.php` — phar build script
 - `src/Config.php` — immutable config value object; defaults are class constants (`DEFAULT_*`)
 - `src/SciCalculator.php` — SCI formula; constants for magic numbers
-- `src/Collector/` — `CollectorInterface` + TimeCollector, MemoryCollector, RequestCollector
-- `src/Reporter/` — `ReporterInterface` + JsonReporter, LogReporter, HtmlReporter + `EnsuresOutputDirectory` trait
+- `src/SciProfiler.php` — orchestrator: collectors → calculator → reporters (fail-safe)
+- `src/ProfileResult.php` — immutable result value object
+- `src/GridCarbonData.php` — static Ember Climate data: 60+ countries, timezone auto-detect
+- `src/Collector/` — `CollectorInterface` + TimeCollector (PSR-20), MemoryCollector, RequestCollector
+- `src/Reporter/` — `ReporterInterface` + JsonReporter, LogReporter, HtmlReporter, TrendReporter + `EnsuresOutputDirectory` and `ReadsJsonlHistory` traits
 - `config/sci-profiler.php` — default config template (bundled in phar)
+- `examples/` — optimization examples with SCI reports (string, database, JSON)
 - `analisi/` — local-only test scripts (in .gitignore)
 
 ## Coding Standards
@@ -52,7 +56,7 @@ Before every push to the repository:
 
 ## The phar
 
-The phar bundles all source files + default config into a single ~70KB file. It includes its own PSR-4 autoloader in the stub, so it requires zero dependencies on the host machine.
+The phar bundles all source files + default config into a single ~82KB file. It includes its own PSR-4 autoloader in the stub, so it requires zero dependencies on the host machine.
 
 Config resolution in phar mode:
 1. `SCI_PROFILER_CONFIG_FILE` env var

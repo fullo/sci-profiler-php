@@ -66,9 +66,15 @@ try {
  */
 // Resolve the absolute path to this phar file for reliable phar:// URLs.
 // When used as auto_prepend_file, Phar::running() is empty, so we use __FILE__.
-$__sciPharPath = str_contains(__FILE__, '.phar')
-    ? preg_replace('/\\.phar.*$/', '.phar', __FILE__)
-    : __FILE__;
+// Use Phar::running() first (works when executed directly), fall back to __FILE__
+// with a regex that matches the LAST .phar in the path (avoids truncating if a
+// parent directory name contains ".phar").
+$__sciPharRunning = Phar::running(false);
+$__sciPharPath = $__sciPharRunning !== ''
+    ? $__sciPharRunning
+    : (str_contains(__FILE__, '.phar')
+        ? preg_replace('/\\.phar(?!.*\\.phar).*$/', '.phar', __FILE__)
+        : __FILE__);
 
 // Register PSR-4 autoloader for classes inside the phar
 spl_autoload_register(static function (string $class) use ($__sciPharPath): void {

@@ -64,7 +64,7 @@ export SCI_PROFILER_REPORTERS=json,log,html
 | `machine_description` | `SCI_PROFILER_MACHINE_DESCRIPTION` | `Default development machine` | Human-readable label for reports and dashboard |
 | `lca_source` | `SCI_PROFILER_LCA_SOURCE` | `Estimated` | Reference for the embodied carbon data source |
 | `output_dir` | `SCI_PROFILER_OUTPUT_DIR` | `/tmp/sci-profiler` | Directory where reporters write results (must be writable) |
-| `reporters` | `SCI_PROFILER_REPORTERS` | `json` | Comma-separated list of reporters: `json`, `log`, `html` |
+| `reporters` | `SCI_PROFILER_REPORTERS` | `json` | Comma-separated list of reporters: `json`, `log`, `html`, `trend` |
 
 ## Finding Your Grid Carbon Intensity
 

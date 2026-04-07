@@ -74,15 +74,32 @@ final class TimeCollector implements CollectorInterface
 
     public function getMetrics(): array
     {
+        // Guard: if stop() was never called, return zero metrics
+        if ($this->stopHrtime === 0 && $this->stopTime === null) {
+            return [
+                'wall_time_ns' => 0,
+                'wall_time_ms' => 0.0,
+                'wall_time_sec' => 0.0,
+            ];
+        }
+
         // When a PSR-20 clock is provided and both timestamps exist,
         // use the clock for wall time (enables deterministic testing).
         if ($this->startTime !== null && $this->stopTime !== null) {
             $wallTimeSec = (float) $this->stopTime->format('U.u')
                 - (float) $this->startTime->format('U.u');
+            // Guard against clock going backward (NTP adjustment, VM migration)
+            if ($wallTimeSec < 0.0) {
+                $wallTimeSec = 0.0;
+            }
             $wallTimeNs = (int) ($wallTimeSec * 1_000_000_000);
             $wallTimeMs = $wallTimeSec * 1_000;
         } else {
             $wallTimeNs = $this->stopHrtime - $this->startHrtime;
+            // hrtime() is monotonic, but guard defensively
+            if ($wallTimeNs < 0) {
+                $wallTimeNs = 0;
+            }
             $wallTimeMs = $wallTimeNs / 1_000_000;
             $wallTimeSec = $wallTimeNs / 1_000_000_000;
         }

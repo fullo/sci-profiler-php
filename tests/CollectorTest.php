@@ -12,6 +12,15 @@ use SciProfiler\Collector\TimeCollector;
 
 final class CollectorTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        unset(
+            $_SERVER['REQUEST_METHOD'],
+            $_SERVER['REQUEST_URI'],
+            $_SERVER['SCRIPT_FILENAME'],
+        );
+    }
+
     public function testTimeCollectorMeasuresWallTime(): void
     {
         $collector = new TimeCollector();
@@ -136,7 +145,5 @@ final class CollectorTest extends TestCase
         $metrics = $collector->getMetrics();
 
         $this->assertSame('/var/www/app/index.php', $metrics['script_filename']);
-
-        unset($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI'], $_SERVER['SCRIPT_FILENAME']);
     }
 }

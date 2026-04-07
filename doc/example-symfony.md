@@ -135,7 +135,7 @@ The profiler measures the entire worker process lifecycle. For per-message granu
 return [
     'enabled'               => true,
     'device_power_watts'    => 18.0,
-    'grid_carbon_intensity' => 56.0,       // France
+    'grid_carbon_intensity' => 33.0,       // France (Ember Climate 2024)
     'output_dir'            => '/var/www/myapp/var/sci-profiler',
     'reporters'             => ['json', 'log', 'html'],
 ];

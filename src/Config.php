@@ -163,7 +163,9 @@ final class Config
             lcaSource: (string) $env('LCA_SOURCE', self::DEFAULT_LCA_SOURCE),
             enabled: (bool) $env('ENABLED', self::DEFAULT_ENABLED),
             outputDir: (string) $env('OUTPUT_DIR', self::DEFAULT_OUTPUT_DIR),
-            reporters: explode(',', (string) $env('REPORTERS', implode(',', self::DEFAULT_REPORTERS))),
+            reporters: array_values(array_filter(
+                explode(',', (string) $env('REPORTERS', implode(',', self::DEFAULT_REPORTERS))),
+            )) ?: self::DEFAULT_REPORTERS,
         );
     }
 

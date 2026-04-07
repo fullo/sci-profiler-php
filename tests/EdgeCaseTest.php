@@ -141,8 +141,8 @@ final class EdgeCaseTest extends TestCase
         $collector->stop();
 
         $metrics = $collector->getMetrics();
-        // Negative wall time — profiler should handle gracefully, not crash
-        $this->assertLessThan(0, $metrics['wall_time_sec']);
+        // Backward clock is clamped to 0 (not negative)
+        $this->assertSame(0.0, $metrics['wall_time_sec']);
     }
 
     public function testTimeCollectorWithSameStartStopClock(): void
@@ -531,6 +531,123 @@ final class EdgeCaseTest extends TestCase
             timestamp: gmdate('c'),
             profileId: bin2hex(random_bytes(8)),
         );
+    }
+
+    // ── Negative config values ──
+
+    public function testNegativeDevicePowerWattsProducesResult(): void
+    {
+        $config = new Config(devicePowerWatts: -10.0);
+        $calc = new SciCalculator($config);
+        $result = $calc->calculate(1.0);
+        $this->assertIsFloat($result['sci_mgco2eq']);
+    }
+
+    public function testNegativeLifetimeHoursReturnZeroEmbodied(): void
+    {
+        $config = new Config(deviceLifetimeHours: -100.0);
+        $calc = new SciCalculator($config);
+        $this->assertSame(0.0, $calc->calculateEmbodiedCarbon(1.0));
+    }
+
+    // ── Stop before start ──
+
+    public function testStopBeforeStartReturnsEmptyResult(): void
+    {
+        $config = new Config(outputDir: $this->outputDir);
+        $profiler = new SciProfiler($config);
+        $profiler->addCollector(new TimeCollector());
+
+        $result = $profiler->stop();
+        $this->assertSame(0.0, $result->getSciScore());
+        $this->assertEmpty($result->getCollectorMetrics());
+    }
+
+    // ── Collector exception does not break host ──
+
+    public function testCollectorExceptionIsCaughtInStop(): void
+    {
+        $config = new Config(outputDir: $this->outputDir);
+        $profiler = new SciProfiler($config);
+
+        $throwingCollector = new class implements \SciProfiler\Collector\CollectorInterface {
+            public function start(): void {}
+            public function stop(): void { throw new \RuntimeException('boom'); }
+            public function getMetrics(): array { return []; }
+            public function getName(): string { return 'throwing'; }
+        };
+
+        $profiler->addCollector($throwingCollector);
+        $profiler->addCollector(new TimeCollector());
+        $profiler->start();
+
+        $result = $profiler->stop();
+        $this->assertInstanceOf(ProfileResult::class, $result);
+        $metrics = $result->getCollectorMetrics();
+        $this->assertArrayHasKey('time', $metrics);
+    }
+
+    // ── TimeCollector: stop not called ──
+
+    public function testTimeCollectorReturnsZeroWhenStopNotCalled(): void
+    {
+        $collector = new TimeCollector();
+        $collector->start();
+        $metrics = $collector->getMetrics();
+        $this->assertSame(0, $metrics['wall_time_ns']);
+        $this->assertSame(0.0, $metrics['wall_time_ms']);
+    }
+
+    // ── TimeCollector: clock goes backward ──
+
+    public function testTimeCollectorHandlesClockGoingBackward(): void
+    {
+        $clock = $this->createMockClock([
+            new \DateTimeImmutable('2026-01-01 12:00:05.000000'),
+            new \DateTimeImmutable('2026-01-01 12:00:00.000000'),
+        ]);
+
+        $collector = new TimeCollector($clock);
+        $collector->start();
+        $collector->stop();
+        $metrics = $collector->getMetrics();
+
+        $this->assertSame(0.0, $metrics['wall_time_sec']);
+        $this->assertSame(0, $metrics['wall_time_ns']);
+    }
+
+    // ── All-malformed JSONL ──
+
+    public function testAllMalformedJsonlProducesEmptyEntries(): void
+    {
+        $config = new Config(outputDir: $this->outputDir, reporters: ['trend']);
+        @mkdir($this->outputDir, 0755, true);
+        file_put_contents(
+            $this->outputDir . '/sci-profiler.jsonl',
+            "not json\n{broken\n[also bad]\n",
+        );
+
+        $trend = new TrendReporter();
+        $trend->report(
+            new ProfileResult([], ['sci_mgco2eq' => 0.1], gmdate('c'), 'test'),
+            $config,
+        );
+
+        $this->assertFileExists($this->outputDir . '/sci-trend.txt');
+    }
+
+    // ── Empty REPORTERS env var ──
+
+    public function testEmptyReportersEnvFallsBackToDefault(): void
+    {
+        putenv('SCI_PROFILER_ENABLED=1');
+        putenv('SCI_PROFILER_REPORTERS=');
+
+        $config = Config::fromEnvironment();
+        $this->assertSame(['json'], $config->getReporters());
+
+        putenv('SCI_PROFILER_ENABLED');
+        putenv('SCI_PROFILER_REPORTERS');
     }
 
     /**

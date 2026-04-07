@@ -71,10 +71,23 @@ final class SciProfiler
      */
     public function stop(): ProfileResult
     {
+        if (!$this->started) {
+            return new ProfileResult(
+                collectorMetrics: [],
+                sciMetrics: $this->calculator->calculate(0.0),
+                timestamp: gmdate('c'),
+                profileId: $this->generateProfileId(),
+            );
+        }
+
         $collectorMetrics = [];
         foreach ($this->collectors as $collector) {
-            $collector->stop();
-            $collectorMetrics[$collector->getName()] = $collector->getMetrics();
+            try {
+                $collector->stop();
+                $collectorMetrics[$collector->getName()] = $collector->getMetrics();
+            } catch (\Throwable) {
+                // Silently ignore collector errors — never break the host application.
+            }
         }
 
         $wallTimeSec = $collectorMetrics['time']['wall_time_sec'] ?? 0.0;

@@ -9,6 +9,15 @@ use SciProfiler\Collector\RequestCollector;
 
 final class RequestCollectorTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        unset(
+            $_SERVER['REQUEST_METHOD'],
+            $_SERVER['REQUEST_URI'],
+            $_SERVER['SCRIPT_FILENAME'],
+        );
+    }
+
     public function testCollectsCliContextWhenNoServerVars(): void
     {
         unset($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
@@ -40,8 +49,6 @@ final class RequestCollectorTest extends TestCase
 
         $this->assertSame('POST', $metrics['method']);
         $this->assertSame('/api/test?foo=bar', $metrics['uri']);
-
-        unset($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
     }
 
     public function testOutputBytesWithOutputBuffering(): void

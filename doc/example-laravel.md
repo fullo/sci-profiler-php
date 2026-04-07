@@ -133,7 +133,7 @@ Each job processed by the worker is a separate PHP execution context. The profil
 return [
     'enabled'               => true,
     'device_power_watts'    => 18.0,
-    'grid_carbon_intensity' => 390.0,      // USA average
+    'grid_carbon_intensity' => 348.0,      // USA average (Ember Climate 2024)
     'output_dir'            => storage_path('sci-profiler'),
     'reporters'             => ['json', 'log', 'html'],
 ];

@@ -11,9 +11,9 @@
  *   auto_prepend_file = /path/to/sci-profiler-php/src/bootstrap.php
  *
  * Configuration is loaded from (in priority order):
- *   1. Environment variables (SCI_PROFILER_*)
- *   2. Config file at SCI_PROFILER_CONFIG_FILE env var
- *   3. Default config at __DIR__/../config/sci-profiler.php
+ *   1. Config file at SCI_PROFILER_CONFIG_FILE env var
+ *   2. Default config at __DIR__/../config/sci-profiler.php
+ *   3. Environment variables (SCI_PROFILER_*)
  *   4. Built-in defaults
  *
  * @author fullo <https://github.com/fullo>

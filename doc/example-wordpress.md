@@ -90,7 +90,7 @@ php -d auto_prepend_file=/opt/sci-profiler.phar \
 return [
     'enabled'               => true,
     'device_power_watts'    => 18.0,
-    'grid_carbon_intensity' => 385.0,      // Germany
+    'grid_carbon_intensity' => 298.0,      // Germany (Ember Climate 2024)
     'output_dir'            => '/var/www/wordpress/wp-content/sci-profiler',
     'reporters'             => ['json', 'log', 'html'],
 ];
